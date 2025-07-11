@@ -1,4 +1,5 @@
 import requests
+import os
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 
@@ -8,7 +9,7 @@ HEADERS = {
 }
 
 
-class WebScrapping:
+class WeebCentral:
     def __init__(self, verify=True):
         self.verify = verify
         p = sync_playwright().start()
@@ -47,9 +48,9 @@ class WebScrapping:
         tags = soup.find_all(
             "a", class_="hover:bg-base-300 flex-1 flex items-center p-2"
         )
-        
+
         nl = {}
-        
+
         for tag in tags:
             href = tag.get("href", "N/A")
             for span in tag.find_all("span"):
@@ -58,3 +59,27 @@ class WebScrapping:
                     break
 
         return nl
+
+    def download_chapter_by_url(self, manga_url, path):
+        self.page.goto(manga_url)
+
+        self.page.wait_for_timeout(2000)
+        self.page.wait_for_selector("img[alt *= 'Page']", timeout=10000)
+        html = self.page.content()
+
+        soup = BeautifulSoup(html, "html.parser")
+        tags = soup.find_all("img")
+        for tag in tags:
+            if tag.has_attr("alt") and "Page" in tag["alt"]:
+                src = tag.get("src", "N/A")
+                if src == "N/A":
+                    print("No image found")
+                    return
+                response = requests.get(src, headers=HEADERS, verify=self.verify)
+                # Downloading png
+                if response.status_code == 200:
+                    with open(f'{path}/{tag.get("alt")}.png', "wb") as f:
+                        f.write(response.content)
+                else:
+                    print(f"Couldn't download the image: {src}")
+        return True

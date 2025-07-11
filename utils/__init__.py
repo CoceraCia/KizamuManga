@@ -1,1 +1,1 @@
-from .web_scrapping import WebScrapping
+from .scraping.weeb_central import WeebCentral

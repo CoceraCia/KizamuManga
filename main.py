@@ -1,8 +1,13 @@
-from utils import WebScrapping
+import re
+from utils.scraping import WeebCentral
+import os
+from zipfile import ZipFile
 
+PNGS_PATH = "files/pngs"
+CBZ_PATH = "files/mangas"
 
 def main():
-    ws = WebScrapping(verify=False)
+    ws = WeebCentral(verify=False)
     try:
         # Retrieve mangas by title
         title = input("Input manga title->")
@@ -13,28 +18,56 @@ def main():
             
         # User selects the manga
         n = int(input("Select one of the mangas, just the number->"))
-        for i, value in enumerate(mangas_retrieved.values(), start=0):
+        for i, (key, value)  in enumerate(mangas_retrieved.items(), start=0):
             if i == n:
+                manga_name = key
                 href = value
                 break
-        print(href)
+        print(manga_name + "-" + href)
         
         # Retrieve all the chapters
         chapters = ws.get_chapters_by_mangaurl(href)
         
         print("AVAILABLE CHAPTERS")
-        for key in chapters.keys():
-            print(f"- {key}")
+        for key, value in chapters.items():
+            print(f"- {key}:{value}")
 
         download_all = True if str(input("Download all chapters? y/n"))  == "y" else False
         
+        manga_path = f"{CBZ_PATH}/{manga_name}"
+        os.makedirs(manga_path, exist_ok=True)
+        
         if download_all is True:
-            None
+            for chap, href in chapters.items():
+                pngs_path = f"{PNGS_PATH}/{manga_name}/{chap}"
+                os.makedirs(pngs_path, exist_ok=True)
+                ws.download_chapter_by_url(href, pngs_path)
+                export_to_cbz(pngs_path, manga_path, f"{manga_name}-{chap}")
+                
+                
+                
             
         ws.close()
     except Exception as e:
         print(e)
         ws.close()
+    except KeyboardInterrupt:
+        print("Goodbye senpai!!")
+        ws.close()
+        
+def export_to_cbz(pngs_path,destination_path,  filename):    
+    with ZipFile(f"{destination_path}/{filename}.zip", "w") as zipf:
+        for file in sorted(os.listdir(pngs_path), key=extract_num):
+            path = os.path.join(pngs_path, file)
+            fname = extract_num(file)
+            file = f"Page {fname:02d}.png"
+            zipf.write(path, arcname=file)
+    os.rename(f"{destination_path}/{filename}.zip", f"{destination_path}/{filename}.cbz")
+    
+def extract_num(name):
+    matches = re.findall(r'\d+', name)
+    return int(matches[0]) if matches else 0
+    
 
 
 if __name__ == "__main__":
