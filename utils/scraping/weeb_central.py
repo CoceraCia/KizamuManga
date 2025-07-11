@@ -1,7 +1,8 @@
 import requests
 import os
 from bs4 import BeautifulSoup
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, Error
+from utils.general_tools import extract_num
 
 BASE_URL = "https://weebcentral.com"
 HEADERS = {
@@ -24,7 +25,11 @@ class WeebCentral:
         title = title.replace(" ", "+")
         url = f"{BASE_URL}/search?text={title}&sort=Best+Match&order=Descending&official=Any&anime=Any&adult=Any&display_mode=Full+Display"
         self.page.goto(url)
-        self.page.wait_for_selector("#search-results > article:nth-child(1)")
+        try:
+            self.page.wait_for_selector("#search-results > article:nth-child(1)", timeout=1500)
+        except Error:
+            print("Manga not found")
+            return None         
         html = self.page.content()
 
         soup = BeautifulSoup(html, "html.parser")
@@ -50,15 +55,18 @@ class WeebCentral:
         )
 
         nl = {}
-
         for tag in tags:
             href = tag.get("href", "N/A")
             for span in tag.find_all("span"):
                 if span.has_attr("class") and span["class"] == []:
                     nl[span.text.strip()] = href.strip()
                     break
-
-        return nl
+            
+        sorted_nl = {}
+        for chap, href in nl.items():
+            
+        
+        return sorted(nl, key=extract_num)
 
     def download_chapter_by_url(self, manga_url, path):
         self.page.goto(manga_url)

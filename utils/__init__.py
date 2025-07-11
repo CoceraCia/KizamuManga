@@ -1,1 +1,1 @@
-from .scraping.weeb_central import WeebCentral
+from .general_tools import export_to_cbz, extract_num
