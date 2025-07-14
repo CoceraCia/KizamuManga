@@ -11,17 +11,43 @@ HEADERS = {
 
 
 class WeebCentral:
+    """
+    Class to interact with the WeebCentral website to search for manga, 
+    retrieve chapters, and download them.
+    Uses Playwright for browser automation and BeautifulSoup for HTML parsing.
+    """
+
     def __init__(self, verify=True):
+        """
+        Initialize the WeebCentral instance with a headless browser.
+
+        Args:
+            verify (bool): Whether to verify SSL certificates when downloading images.
+                           Default is True.
+        """
         self.verify = verify
         p = sync_playwright().start()
         self.browser = p.chromium.launch(headless=True)
         self.page = self.browser.new_page()
 
     def close(self):
+        """
+        Close the Playwright page and browser.
+        """
         self.page.close()
         self.browser.close()
 
     def get_mangas_by_title(self, title: str):
+        """
+        Search for manga by title on WeebCentral.
+
+        Args:
+            title (str): The title of the manga to search.
+
+        Returns:
+            dict or None: A dictionary with manga names as keys and partial URLs as values.
+                          Returns None if no results are found.
+        """
         title = title.replace(" ", "+")
         url = f"{BASE_URL}/search?text={title}&sort=Best+Match&order=Descending&official=Any&anime=Any&adult=Any&display_mode=Full+Display"
         self.page.goto(url)
@@ -29,20 +55,28 @@ class WeebCentral:
             self.page.wait_for_selector("#search-results > article:nth-child(1)", timeout=1500)
         except Error:
             print("Manga not found")
-            return None         
+            return None
         html = self.page.content()
 
         soup = BeautifulSoup(html, "html.parser")
         manga_names = soup.select("a.line-clamp-1")
 
         nl = {}
-
         for item in manga_names:
             nl[item.text.strip()] = item.get("href", "N/A")
 
         return nl
 
     def get_chapters_by_mangaurl(self, manga_url):
+        """
+        Retrieve available chapters for a given manga URL.
+
+        Args:
+            manga_url (str): The full URL of the manga.
+
+        Returns:
+            dict: A sorted dictionary with chapter names as keys and chapter URLs as values.
+        """
         self.page.goto(manga_url)
         self.page.wait_for_selector("#chapter-list > button")
         self.page.click("#chapter-list > button")
@@ -61,14 +95,25 @@ class WeebCentral:
                 if span.has_attr("class") and span["class"] == []:
                     nl[span.text.strip()] = href.strip()
                     break
-            
+
         sorted_nl = {}
-        for chap, href in nl.items():
-            
-        
-        return sorted(nl, key=extract_num)
+        for chap in sorted(nl, key=extract_num):
+            print(f"{chap}: {nl[chap]}")
+            sorted_nl[chap] = nl[chap]
+
+        return sorted_nl
 
     def download_chapter_by_url(self, manga_url, path):
+        """
+        Download all pages of a manga chapter to the specified local folder.
+
+        Args:
+            manga_url (str): The URL of the chapter to download.
+            path (str): The local folder path to save the images.
+
+        Returns:
+            bool: True if the download was successful.
+        """
         self.page.goto(manga_url)
 
         self.page.wait_for_timeout(2000)
@@ -83,8 +128,12 @@ class WeebCentral:
                 if src == "N/A":
                     print("No image found")
                     return
-                response = requests.get(src, headers=HEADERS, verify=self.verify)
-                # Downloading png
+                while True:
+                    try:
+                        response = requests.get(src, headers=HEADERS, verify=self.verify, timeout=15)
+                        break
+                    except requests.exceptions.Timeout:
+                        print("Error downloading the chapter. Trying again")
                 if response.status_code == 200:
                     with open(f'{path}/{tag.get("alt")}.png', "wb") as f:
                         f.write(response.content)
