@@ -42,7 +42,7 @@ class LoadingSpinner():
         Args:
             message (str): The message to display before the dots.
         """
-        max_length = len(message) + 3
+        max_length = len(message) + 4
         while self.state:
             for i in range(3):
                 display = f"\r{message}{'.' * (i + 1)}"

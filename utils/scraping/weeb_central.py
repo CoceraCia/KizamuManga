@@ -1,5 +1,7 @@
 import requests
 import os
+
+
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright, Error
 from utils.general_tools import extract_num
@@ -34,8 +36,19 @@ class WeebCentral:
         """
         Close the Playwright page and browser.
         """
-        self.page.close()
-        self.browser.close()
+        # Close page
+        try:
+            self.page.close()
+            print("Page closed successfully")
+        except Exception as e:
+            print(f"⚠️ Error closing page: {e}")
+        
+        # Close browser
+        try:
+            self.browser.close()
+            print("Browser closed successfully")
+        except Exception as e:
+            print(f"⚠️ Error closing browser: {e}")
 
     def get_mangas_by_title(self, title: str):
         """
@@ -54,8 +67,7 @@ class WeebCentral:
         try:
             self.page.wait_for_selector("#search-results > article:nth-child(1)", timeout=1500)
         except Error:
-            print("Manga not found")
-            return None
+            raise ValueError("Manga not found")
         html = self.page.content()
 
         soup = BeautifulSoup(html, "html.parser")
@@ -87,7 +99,7 @@ class WeebCentral:
         tags = soup.find_all(
             "a", class_="hover:bg-base-300 flex-1 flex items-center p-2"
         )
-
+        # Retrieveng mangas
         nl = {}
         for tag in tags:
             href = tag.get("href", "N/A")
@@ -96,9 +108,9 @@ class WeebCentral:
                     nl[span.text.strip()] = href.strip()
                     break
 
+        # Sorting the retrieved mangas
         sorted_nl = {}
         for chap in sorted(nl, key=extract_num):
-            print(f"{chap}: {nl[chap]}")
             sorted_nl[chap] = nl[chap]
 
         return sorted_nl
@@ -114,29 +126,34 @@ class WeebCentral:
         Returns:
             bool: True if the download was successful.
         """
-        self.page.goto(manga_url)
+        try:
+            self.page.goto(manga_url)
 
-        self.page.wait_for_timeout(2000)
-        self.page.wait_for_selector("img[alt *= 'Page']", timeout=10000)
-        html = self.page.content()
+            self.page.wait_for_timeout(2000)
+            self.page.wait_for_selector("img[alt *= 'Page']", timeout=10000)
+            html = self.page.content()
 
-        soup = BeautifulSoup(html, "html.parser")
-        tags = soup.find_all("img")
-        for tag in tags:
-            if tag.has_attr("alt") and "Page" in tag["alt"]:
-                src = tag.get("src", "N/A")
-                if src == "N/A":
-                    print("No image found")
-                    return
-                while True:
-                    try:
-                        response = requests.get(src, headers=HEADERS, verify=self.verify, timeout=15)
-                        break
-                    except requests.exceptions.Timeout:
-                        print("Error downloading the chapter. Trying again")
-                if response.status_code == 200:
-                    with open(f'{path}/{tag.get("alt")}.png', "wb") as f:
-                        f.write(response.content)
-                else:
-                    print(f"Couldn't download the image: {src}")
+            soup = BeautifulSoup(html, "html.parser")
+            tags = soup.find_all("img")
+        
+            for tag in tags:
+                if tag.has_attr("alt") and "Page" in tag["alt"]:
+                    src = tag.get("src", "N/A")
+                    if src == "N/A":
+                        print("No image found")
+                        return
+                    while True:
+                        try:
+                            response = requests.get(src, headers=HEADERS, verify=self.verify, timeout=15)
+                            break
+                        except requests.exceptions.Timeout:
+                            print("Error downloading the chapter. Trying again")
+                    if response.status_code == 200:
+                        with open(f'{path}/{tag.get("alt")}.png', "wb") as f:
+                            f.write(response.content)
+                    else:
+                        raise ValueError(f"Couldn't download the image: {src}")
+        except Exception:
+            raise KeyboardInterrupt()
+        
         return True
