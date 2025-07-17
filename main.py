@@ -1,9 +1,5 @@
-import warnings
-
-warnings.filterwarnings("ignore", category=ResourceWarning)
-
 import json
-import os
+import os, argparse
 import threading
 import tempfile
 import shutil
@@ -11,24 +7,33 @@ import asyncio
 import aioconsole
 import sys
 
+from utils.config_handler import ConfigHandler
 from utils.scraping import WeebCentral
 from utils.general_tools import export_to_cbz
 from utils.loading_spinner import LoadingSpinner
 
+# Files managment
 with open("config.json", "r") as f:
     config: dict = json.load(f)
 PNGS_PATH = tempfile.mkdtemp()
 print(PNGS_PATH)
 CBZ_PATH = config.get("cbz_path")
+manga_website = config.get("manga_website")
+
+# Asyncio semaphor
 sem = asyncio.Semaphore(5)
 
 async def main():
-    interrupted = False
+    await setup_args()
+    
     print(CBZ_PATH)
+    
+    cf = ConfigHandler()
+    if not cf.manga_web_is_available(manga_website):
+        print(cf.retrieve_available_websites(str=True))
     ws = WeebCentral(verify=False)
     await ws.init_playwright()
     ls = LoadingSpinner()
-    print(sys.platform)
 
     async def close(interrupted=False):
         try:
@@ -101,6 +106,16 @@ async def main():
     except (ValueError, Exception, BaseException):
         await asyncio.shield(close(interrupted=True))
         raise
+
+async def setup_args():
+        parser = argparse.ArgumentParser(description="Manga scrapper")
+        subparsers = parser.add_subparsers(dest="command")
+        
+        subp_update = subparsers.add_parser("config", help="update configuration")
+        subp_update.add_argument("--website", help="website where the scrapping happens")
+        subp_update.add_argument("--cbz_path", help="path where the mangas are located")
+        
+    
 
 
 async def download_chapter(ws, chap, href, manga_name, manga_path ,pngs_path, ls):

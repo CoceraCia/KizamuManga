@@ -4,7 +4,7 @@ import os
 
 
 from bs4 import BeautifulSoup
-from playwright.async_api import async_playwright, Error
+from playwright.async_api import async_playwright, Error, TimeoutError as PlaywrightTimeoutError
 from utils.general_tools import extract_num
 
 BASE_URL = "https://weebcentral.com"
@@ -15,7 +15,7 @@ HEADERS = {
 
 class WeebCentral:
     """
-    Class to interact with the WeebCentral website to search for manga, 
+    Class to interact with the WeebCentral website to search for manga,
     retrieve chapters, and download them.
     Uses Playwright for browser automation and BeautifulSoup for HTML parsing.
     """
@@ -31,7 +31,7 @@ class WeebCentral:
         self.verify = verify
         self.browser = None
         self.context = None
-        
+
     async def init_playwright(self):
         p = await async_playwright().start()
         self.browser = await p.chromium.launch(headless=True)
@@ -47,7 +47,7 @@ class WeebCentral:
             print("Page closed successfully")
         except Exception as e:
             print(f"⚠️ Error closing page: {type(e).__name__}: {e}")
-            
+
         # Close browser
         try:
             await asyncio.wait_for(self.browser.close(), timeout=1)
@@ -71,7 +71,9 @@ class WeebCentral:
         async with await self.context.new_page() as page:
             try:
                 await page.goto(url)
-                await page.wait_for_selector("#search-results > article:nth-child(1)", timeout=1500)
+                await page.wait_for_selector(
+                    "#search-results > article:nth-child(1)", timeout=1500
+                )
                 html = await page.content()
             except Error:
                 raise ValueError("Manga not found")
@@ -133,35 +135,43 @@ class WeebCentral:
         Returns:
             bool: True if the download was successful.
         """
-        try:
-            async with await self.context.new_page() as page:
-                await page.goto(manga_url)
+        while True:
+            try:
+                async with await self.context.new_page() as page:
+                    await page.goto(manga_url)
 
-                await page.wait_for_timeout(2000)
-                await page.wait_for_selector("img[alt *= 'Page']", timeout=10000)
-                html = await page.content()
+                    await page.wait_for_timeout(2000)
+                    await page.wait_for_selector("img[alt *= 'Page']", timeout=5000)
+                    html = await page.content()
+                    break
+            except PlaywrightTimeoutError:
+                pass
+            
 
-            soup = BeautifulSoup(html, "html.parser")
-            tags = soup.find_all("img")
+        soup = BeautifulSoup(html, "html.parser")
+        tags = soup.find_all("img")
+
+        async with aiohttp.ClientSession() as session:
+            for tag in tags:
+                if tag.has_attr("alt") and "Page" in tag["alt"]:
+                    url = tag.get("src", "N/A")
+                    if url.strip() == "":
+                        print("no data")
+                    if url == "N/A":
+                        print("No image found")
+                        break
+                    while True:
+                        try:
+                            async with session.get(
+                                url, timeout=aiohttp.ClientTimeout(total=5)
+                            ) as r:
+                                content = await r.read()
+                                with open(
+                                    f'{path}/{tag.get("alt")}.png', "wb"
+                                ) as f:
+                                    f.write(content)
+                                break
+                        except asyncio.TimeoutError:
+                            print("TimeoutError")
+                            pass
                     
-            async with aiohttp.ClientSession() as session:
-                for tag in tags:
-                    if tag.has_attr("alt") and "Page" in tag["alt"]:
-                        url = tag.get("src","N/A")
-                        if url == "N/A":
-                            print("No image found")
-                            break
-                        while True:
-                            try:
-                                async with session.get(url, timeout=aiohttp.ClientTimeout(total = 5)) as r:
-                                    content = await r.read()
-                                    with open(f'{path}/{tag.get("alt")}.png', "wb") as f:
-                                        f.write(content)
-                                    break
-                            except asyncio.TimeoutError:
-                                print("TimeoutError")
-                                pass
-        except Exception:
-            None
-        
-        return True
