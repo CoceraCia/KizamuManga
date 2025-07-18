@@ -1,7 +1,4 @@
 import asyncio, aiohttp
-import requests
-import os
-
 
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright, Error, TimeoutError as PlaywrightTimeoutError
@@ -99,9 +96,11 @@ class WeebCentral:
         """
         async with await self.context.new_page() as page:
             await page.goto(manga_url)
-            await page.wait_for_selector("#chapter-list > button")
-            await page.click("#chapter-list > button")
-            await page.wait_for_timeout(1200)
+            element = await page.query_selector("#chapter-list > button")
+            if element:
+                await page.wait_for_selector("#chapter-list > button")
+                await page.click("#chapter-list > button")
+                await page.wait_for_timeout(1200)
             html = await page.content()
 
         soup = BeautifulSoup(html, "html.parser")
