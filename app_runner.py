@@ -2,26 +2,32 @@ import asyncio
 import os
 import re
 import shutil
-from config import CBZ_PATH, MANGA_WEBSITE, PNGS_PATH
-from handlers import ArgsHandler
+from handlers import ArgsHandler, ConfigHandler
+from handlers.config_handler import BASE_PNGS_PATH, AVAILABLE_WBSITES
 from utils.scraping import WeebCentral, ScraperInterface
-from utils import LoadingSpinner, export_to_cbz
-from utils import MangaDownloader
+from utils import LoadingSpinner, export_to_cbz, MangaDownloader
 
 
 class AppRunner():
     def __init__(self):
+        # Check if there's args
         self.args = ArgsHandler().setup_args()
         if self.args.command is None:
             print("Invalid syntaxis")
             raise ValueError
-        print(self.args)
+        # retrieve config.yaml atr
+        self.config = ConfigHandler()
+        
+        # retrieve the selected scrapper
         self.ws: ScraperInterface = None
-        match MANGA_WEBSITE:
-            case "weebcentral":
+        match self.config.manga_website:
+            case "weeb_central":
                 self.ws = WeebCentral()
+            case _:
+                print(f"Please choose a valid website: {AVAILABLE_WBSITES}")
+                raise ValueError
 
-        # Asyncio semaphor
+        # Initialize
         self.mdownloader = MangaDownloader(self.ws)
         self.sem = asyncio.Semaphore(5)
         self.ls = LoadingSpinner()
@@ -71,13 +77,13 @@ class AppRunner():
                             print(chap)
                 elif self.args.command == "install":
                     download_all = True if self.args.chap == "all" else False
-                    manga_path = f"{CBZ_PATH}/{manga_name}"
+                    manga_path = f"{self.config.cbz_path}/{manga_name}"
                     os.makedirs(manga_path, exist_ok=True)
                     tasks = []
 
                     if download_all is True:
                         for chap, href in chapters.items():
-                            pngs_path = f"{PNGS_PATH}/{manga_name}/{chap}"
+                            pngs_path = f"{BASE_PNGS_PATH}/{manga_name}/{chap}"
                             tasks.append(
                                     self.__download_chap(
                                         pngs_path=pngs_path,
@@ -99,7 +105,7 @@ class AppRunner():
 
                         for i, (chap, href) in enumerate(chapters.items(), start=1):
                             if i >= int(chap_to_download[0]) and i <= int(chap_to_download[1]):
-                                pngs_path = f"{PNGS_PATH}/{manga_name}/{chap}"
+                                pngs_path = f"{BASE_PNGS_PATH}/{manga_name}/{chap}"
                                 tasks.append(
                                     self.__download_chap(
                                         pngs_path=pngs_path,
@@ -117,8 +123,8 @@ class AppRunner():
             try:
                 if self.ls.state is not None:
                     self.ls.end()
-                if os.path.exists(PNGS_PATH):
-                    shutil.rmtree(PNGS_PATH)
+                if os.path.exists(BASE_PNGS_PATH):
+                    shutil.rmtree(BASE_PNGS_PATH)
                 await asyncio.shield(self.ws.close())
             
                 tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
