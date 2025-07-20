@@ -7,8 +7,8 @@ class ConfigHandler:
         return True if name in AVAILABLE_WBSITES else False
 
     @staticmethod
-    def retrieve_available_websites(str=False):
-        if not str:
+    def retrieve_available_websites(to_str=False):
+        if not to_str:
             return AVAILABLE_WBSITES
         
         txt = ""
