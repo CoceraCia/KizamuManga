@@ -14,6 +14,7 @@ class ArgsHandler():
         # config args
         sub_config.add_argument("--website", help="website where the scrapping happens")
         sub_config.add_argument("--cbz_path", help="path where the mangas are located")
+        sub_config.add_argument("--multiple_tasks", help="number of multiple downloads")
 
         # install subparser
         sub_install = subparsers.add_parser("install", help="install a manga by it's name")
@@ -23,8 +24,7 @@ class ArgsHandler():
                                 help="Install the manga by its name (e.g., One Piece)",
                                 required=True)
         sub_install.add_argument("--chap",
-                                help="Chapters to download: a single number (e.g., 5), a range (e.g., 9-18), or 'all' for all chapters",
-                                required=True)
+                                help="Chapters to download: a single number (e.g., 5), a range (e.g., 9-18)")
 
         # search subparser
         sub_search = subparsers.add_parser("search", help="name of the manga to search")

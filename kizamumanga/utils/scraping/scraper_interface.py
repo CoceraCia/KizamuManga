@@ -11,13 +11,13 @@ class ScraperInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_mangas_by_title(self, title):
+    async def get_mangas_by_title(self, title) -> dict:
         pass
 
     @abstractmethod
-    async def get_chapters_by_mangaurl(self, manga_url):
+    async def get_chapters_by_mangaurl(self, manga_url) -> dict:
         pass
 
     @abstractmethod
-    async def obtain_chapter_content(self, manga_url):
+    async def obtain_chapter_content(self, manga_url) -> dict:
         pass

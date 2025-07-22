@@ -1,8 +1,3 @@
-{
-    # Nombre del sitio manga
-    "manga_website": "weeb_central",
-    # Ruta a los archivos CBZ
-    "cbz_path": "files/mangas",
-    # Número máximo de tareas paralelas
-    "multiple_tasks": 5
-}
+cbz_path: mangas_downloaded
+manga_website: weeb_central
+multiple_tasks: '5'
