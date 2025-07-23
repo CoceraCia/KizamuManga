@@ -1,8 +1,9 @@
 import os
 import re
 from zipfile import ZipFile
+from engine.logger import Logger
 
-
+logger = Logger("utils.general_tools")
 
 @staticmethod
 def export_to_cbz(pngs_path, destination_path, filename):
@@ -12,9 +13,12 @@ def export_to_cbz(pngs_path, destination_path, filename):
             fname = extract_num(file)
             file = f"Page {fname:02d}.png"
             zipf.write(path, arcname=file)
-    os.rename(
-        f"{destination_path}/{filename}.zip", f"{destination_path}/{filename}.cbz"
-    )
+    if not os.path.exists(f"{destination_path}/{filename}.cbz"):
+        os.rename(
+            f"{destination_path}/{filename}.zip", f"{destination_path}/{filename}.cbz"
+        )
+    else:
+        logger.error(f"File {filename}.cbz already exists in {destination_path}")
 
 
 @staticmethod
