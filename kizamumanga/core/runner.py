@@ -3,6 +3,8 @@ import os
 import re
 import shutil
 
+from .exceptions import MangaError, IncorrectScraper, ChapterNotFoundError, InvalidChapterRangeError, ScraperConnectionError
+from .logger import Logger
 from .downloader import MangaDownloader
 from .config import Config, BASE_PNGS_PATH, AVAILABLE_WBSITES
 from handlers import ArgsHandler
@@ -12,15 +14,17 @@ from utils import LoadingSpinner, export_to_cbz, Ascii
 
 class Runner:
     def __init__(self):
-        print("inicializing kizamumanga")
+        self.logger = Logger("core.runner")
         # Check if there's args
         self.args = ArgsHandler().setup_args()
         if self.args.command is None:
-            print("Invalid syntaxis")
-            raise ValueError
+            print("Invalid syntaxis: must be 'search', 'install' or 'config'")
+            self.logger.error("No arguments provided")
+            raise SyntaxError
 
         # retrieve config.yaml atr
         self.config: Config = Config()
+        self.logger.info(f"Config loaded: {self.config._config}")
 
         # retrieve the selected scrapper
         self.ws: ScraperInterface = None
@@ -41,8 +45,10 @@ class Runner:
                 self.ws = WeebCentral()
             case _:
                 print(f"Please choose a valid website: {AVAILABLE_WBSITES}")
-                raise ValueError
-
+                self.logger.error(f"Incorrect website selected: {self.config.manga_website}")
+                raise IncorrectScraper
+        self.logger.info(f"Scraper selected: {self.ws.__class__.__name__}")
+        
         # Initialize
         self.mdownloader = MangaDownloader(self.ws)
         self.sem = asyncio.Semaphore(self.config.multiple_tasks)
@@ -63,7 +69,7 @@ class Runner:
                     await self.install(chapters)
         except (ValueError, Exception, BaseException) as e:
             print(e)
-            raise
+            raise KeyboardInterrupt
         finally:
             await self.close()
 
@@ -89,13 +95,15 @@ class Runner:
             # User selects the manga
             n = int(input("Select one of the mangas, just the number->"))
         except ValueError:
-            print("Invalid syntax-use a number")
+            self.logger.error("Invalid input for manga selection")
+            print("Invalid value please use a number")
 
         for i, (key, value) in enumerate(mangas_retrieved.items(), start=0):
             if i == n:
                 manga_name = key
                 href = value
                 break
+            
         # Retrieve all the chapters
         self.ls.start("Retrieving chapters")
         chapters = await self.ws.get_chapters_by_mangaurl(href)
@@ -142,6 +150,7 @@ class Runner:
                 print(
                     "Invalid chapters format.\nREMEMBER-> a single number (e.g., 5), a range (e.g., 9-18), or 'all' for all chapters"
                 )
+                self.logger.debug(f"Invalid chapter range format trying to download {self.args.name}, with chapters {self.args.chap}")
                 raise ValueError
             chap_to_download = self.args.chap.split("-")
 

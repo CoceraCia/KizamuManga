@@ -2,6 +2,7 @@ import asyncio
 import os
 import sys
 from core import Runner
+from core import MangaError, ChapterNotFoundError, InvalidChapterRangeError, ScraperConnectionError
 
 async def main():
     await Runner().run()
