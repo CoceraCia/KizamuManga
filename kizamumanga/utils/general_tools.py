@@ -1,7 +1,5 @@
 import os
 import re
-import threading
-import time
 from zipfile import ZipFile
 
 
