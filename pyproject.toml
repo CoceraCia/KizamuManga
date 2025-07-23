@@ -5,9 +5,9 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "kizamu_manga"
 version = "0.1.0"
-description = "Un descargador de mangas desde la línea de comandos usando Playwright, BeautifulSoup y aiohttp"
+description = "Un descargador de mangas desde la línea de comandos usando Playwright, BeautifulSoup y aiohttp para hacer scraping de sitios web."
 authors = [
-    { name="Tu Nombre", email="tunombre@example.com" }
+    { name="Cocera Cia", email="coceraciamiguel@gmail.com" }
 ]
 readme = "README.md"
 requires-python = ">=3.9"

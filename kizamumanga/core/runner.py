@@ -3,14 +3,16 @@ import os
 import re
 import shutil
 
-from handlers import ArgsHandler, ConfigHandler
-from handlers.config_handler import BASE_PNGS_PATH, AVAILABLE_WBSITES
-from utils.scraping import WeebCentral, ScraperInterface
-from utils import LoadingSpinner, export_to_cbz, MangaDownloader, Ascii
+from .downloader import MangaDownloader
+from .config import Config, BASE_PNGS_PATH, AVAILABLE_WBSITES
+from handlers import ArgsHandler
+from scraping import WeebCentral, ScraperInterface
+from utils import LoadingSpinner, export_to_cbz, Ascii
 
 
-class AppRunner:
+class Runner:
     def __init__(self):
+        print("inicializing kizamumanga")
         # Check if there's args
         self.args = ArgsHandler().setup_args()
         if self.args.command is None:
@@ -18,7 +20,7 @@ class AppRunner:
             raise ValueError
 
         # retrieve config.yaml atr
-        self.config: ConfigHandler = ConfigHandler()
+        self.config: Config = Config()
 
         # retrieve the selected scrapper
         self.ws: ScraperInterface = None
@@ -27,7 +29,7 @@ class AppRunner:
         self.mdownloader: MangaDownloader = None
         self.sem: asyncio.Semaphore = None
         self.ls: LoadingSpinner = None
-
+        print(self.args)
         if self.args.command != "config":
             self.__set_up()
 
@@ -43,11 +45,12 @@ class AppRunner:
 
         # Initialize
         self.mdownloader = MangaDownloader(self.ws)
-        self.sem = asyncio.Semaphore(5)
+        self.sem = asyncio.Semaphore(self.config.multiple_tasks)
         self.ls = LoadingSpinner()
 
     async def run(self):
         try:
+            print(self.args)
             if self.args.command == "config":
                 await self.modify_config()
                 return

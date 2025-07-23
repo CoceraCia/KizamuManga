@@ -5,13 +5,13 @@ import yaml
 AVAILABLE_WBSITES = ["weeb_central"]
 BASE_PNGS_PATH = tempfile.mkdtemp()
 
-class ConfigHandler:
+class Config:
     def __init__(self):
-        with open("config.yaml", "r", encoding="utf-8") as f:
+        with open("kizamumanga/core/config.yaml", "r", encoding="utf-8") as f:
             self._config: dict = yaml.safe_load(f)
         self.cbz_path = self._config.get("cbz_path")
         self.manga_website = self._config.get("manga_website")
-        self.multiple_tasks = self._config.get("multiple_tasks")
+        self.multiple_tasks:int = int(self._config.get("multiple_tasks"))
         
         
     def set_cbz_path(self, new_path:str)->bool:
@@ -38,7 +38,7 @@ class ConfigHandler:
         self.save_data()
     
     def save_data(self):
-        with open("config.yaml", "w") as f:
+        with open("kizamumanga/core/config.yaml", "w", encoding="utf-8") as f:
             yaml.safe_dump(self._config, f)
             
     def manga_web_is_available(self, name: str) -> bool:

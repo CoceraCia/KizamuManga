@@ -1,6 +1,6 @@
 import asyncio
 import aiohttp
-from .scraping import ScraperInterface
+from scraping import ScraperInterface
 
 
 class MangaDownloader:

@@ -1,6 +1,6 @@
 class Ascii:
     
-    def thank_you_for_downloading():
+    def thank_you_for_downloading(self):
         print("""      
                 ⠀⢀⡤⠚⣷⠀⠀⣀⣤⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡞⣟⢀⡴⠋⠀⠀⣿⠖⠋⢀⡏⠀⠀⠀⡀⡀⠀⠀

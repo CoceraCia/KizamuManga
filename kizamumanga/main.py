@@ -1,10 +1,10 @@
 import asyncio
 import os
 import sys
-from app_runner import AppRunner
+from core import Runner
 
 async def main():
-    await AppRunner().run()
+    await Runner().run()
     
 if __name__ == "__main__":
     try:
