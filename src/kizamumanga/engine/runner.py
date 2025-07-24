@@ -4,6 +4,7 @@ import asyncio
 import os
 import re
 import shutil
+import socket
 
 from handlers import ArgsHandler
 from scraping import WeebCentral, ScraperInterface, MangaError
@@ -79,19 +80,25 @@ class Runner:
                 if self.args.command == "install":
                     await self.install(chapters)
                     self.logger.info("Manga chapters installed")
+        except socket.gaierror as e:
+            self.logger.error(f"Network error: {e}", exc_info=True)
+            raise KeyboardInterrupt from e
+        except socket.error as e:
+            self.logger.error(f"Socket error: {e}", exc_info=True)
+            raise KeyboardInterrupt from e
         except MangaError as e:
             self.logger.error(f"Manga error: {e}")  
         except asyncio.exceptions.CancelledError as e:
-            self.logger.error(f"CancelledError during run(): {e}")
+            self.logger.error(f"CancelledError during run(): {e}", exc_info=True)
             raise KeyboardInterrupt from e
         except ValueError as e:
-            self.logger.error(f"ValueError during run(): {e}")
+            self.logger.error(f"ValueError during run(): {e}", exc_info=True)
             raise KeyboardInterrupt from e
         except FileNotFoundError as e:
-            self.logger.error(f"FileNotFoundError during run(): {e}")
+            self.logger.error(f"FileNotFoundError during run(): {e}", exc_info=True)
             raise KeyboardInterrupt from e
         except (Exception, BaseException) as e:
-            self.logger.error(f"Unexpected error during run(): {e}")
+            self.logger.error(f"Unexpected error during run(): {e}", exc_info=True)
             raise KeyboardInterrupt from e
         finally:
             await self.close()
@@ -127,7 +134,7 @@ class Runner:
             if n < 0 or n > len(mangas_retrieved):
                 raise ValueError("user selected a non existent manga")
         except ValueError as e:
-            self.logger.error(f"Invalid input for manga selection: {e}")
+            self.logger.error(f"Invalid input for manga selection: {e}", exc_info=True)
             return
 
         for i, (key, value) in enumerate(mangas_retrieved.items(), start=0):
@@ -236,7 +243,7 @@ class Runner:
                     if isinstance(result, Exception):
                         self.logger.error(f"Task {i} finished with exception: {result}")
         except asyncio.exceptions.CancelledError as e:
-            self.logger.error(f"CancelledError during close(): {e}")
+            self.logger.error(f"CancelledError during close(): {e}", exc_info=True)
         except Exception as e:
             raise KeyboardInterrupt from e
 

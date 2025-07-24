@@ -58,9 +58,9 @@ class Logger:
         """Log a warning message."""
         self.logger.warning(message)
 
-    def error(self, message: str):
+    def error(self, message: str, exc_info = False):
         """Log an error message."""
-        self.logger.error(message)
+        self.logger.error(message, exc_info=exc_info)
 
     def critical(self, message: str):
         """Log a critical message."""

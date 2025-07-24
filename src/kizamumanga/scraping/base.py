@@ -26,11 +26,11 @@ class ScraperBase():
             await asyncio.wait_for(self.context.close(), timeout=1)
             self.logger.info("Context closed successfully")
         except Exception as e:
-            self.logger.error(f"Error closing page: {type(e).__name__}: {e}")
+            self.logger.error(f"Error closing page: {type(e).__name__}: {e}" , exc_info=True)
 
         # Close browser
         try:
             await asyncio.wait_for(self.browser.close(), timeout=1)
             self.logger.info("Browser closed successfully")
         except Exception as e:
-            self.logger.error(f"Error closing browser: {type(e).__name__}: {e}")
+            self.logger.error(f"Error closing browser: {type(e).__name__}: {e}", exc_info=True)
