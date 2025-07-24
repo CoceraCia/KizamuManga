@@ -11,7 +11,7 @@ from scraping import WeebCentral, ScraperInterface, MangaError
 from utils import LoadingSpinner, export_to_cbz, Ascii
 from utils.logger import Logger
 from .downloader import MangaDownloader
-from .config import Config, BASE_PNGS_PATH, AVAILABLE_WBSITES
+from .config import Config, BASE_PNGS_PATH
 
 
 class Runner:
@@ -22,11 +22,10 @@ class Runner:
     def __init__(self):
         self.logger = Logger("engine.runner")
         # Check if there's args
-        self.args = ArgsHandler().setup_args()
-        if self.args.command is None:
-            print("Invalid syntaxis: must be 'search', 'install' or 'config'")
-            self.logger.error("No arguments provided")
-            raise SyntaxError
+        args_handler = ArgsHandler()
+        args_handler.validate_args()
+        self.args = args_handler.args
+        
         self.logger.info(f"Arguments received: {self.args}")
         self.logger.info(f"Temporary PNGs path created: {BASE_PNGS_PATH}")
 
@@ -51,9 +50,6 @@ class Runner:
         match self.config.get_manga_website():
             case "weeb_central":
                 self.ws = WeebCentral()
-            case _:
-                print(f"Please choose a valid website: {AVAILABLE_WBSITES}")
-                raise ValueError(f"The website you selected is not available: {self.config.get_manga_website()}")
         self.logger.info(f"Scraper initialized and selected: {self.ws.__class__.__name__}")
 
         # Initialize
@@ -80,6 +76,9 @@ class Runner:
                 if self.args.command == "install":
                     await self.install(chapters)
                     self.logger.info("Manga chapters installed")
+        except FileNotFoundError as e:
+            self.logger.exception(f"FileNotFoundError during run(): {e}")
+            raise KeyboardInterrupt from e
         except socket.gaierror as e:
             self.logger.exception(f"Network error: {e}")
             raise KeyboardInterrupt from e
@@ -87,17 +86,15 @@ class Runner:
             self.logger.exception(f"Socket error: {e}")
             raise KeyboardInterrupt from e
         except MangaError as e:
-            self.logger.exception(f"Manga error: {e}")  
+            self.logger.exception(f"Manga error: {e}")
+            raise KeyboardInterrupt from e
         except asyncio.exceptions.CancelledError as e:
             self.logger.exception(f"CancelledError during run(): {e}")
             raise KeyboardInterrupt from e
         except ValueError as e:
             self.logger.exception(f"ValueError during run(): {e}")
             raise KeyboardInterrupt from e
-        except FileNotFoundError as e:
-            self.logger.exception(f"FileNotFoundError during run(): {e}")
-            raise KeyboardInterrupt from e
-        except (Exception, BaseException) as e:
+        except Exception as e:
             self.logger.exception(f"Unexpected error during run(): {e}")
             raise KeyboardInterrupt from e
         finally:
