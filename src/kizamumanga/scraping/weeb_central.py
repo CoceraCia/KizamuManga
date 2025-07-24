@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 
-from engine.logger import Logger
+from utils.logger import Logger
 from playwright.async_api import Error, TimeoutError as PlaywrightTimeoutError
 from utils.general_tools import extract_num
 from .interface import ScraperInterface
