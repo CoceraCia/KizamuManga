@@ -9,7 +9,7 @@ import socket
 from handlers import ArgsHandler
 from scraping import WeebCentral, ScraperInterface, MangaError
 from utils import LoadingSpinner, export_to_cbz, Ascii
-from .logger import Logger
+from utils.logger import Logger
 from .downloader import MangaDownloader
 from .config import Config, BASE_PNGS_PATH, AVAILABLE_WBSITES, PROJECT_ROOT
 

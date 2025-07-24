@@ -1,6 +1,6 @@
 import asyncio
 from playwright.async_api import async_playwright
-from engine.logger import Logger
+from utils.logger import Logger
 class MangaError(Exception):
     """Custom exception for manga-related errors."""
 class ScraperBase():

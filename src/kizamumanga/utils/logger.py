@@ -4,12 +4,14 @@ import logging
 import os
 
 from logging.handlers import RotatingFileHandler
-from .config import PROJECT_ROOT
 
 class Logger:
     """Logger class to handle logging for the application."""
     def __init__(self, name: str, console: bool = False):
-        self.path_logs = os.path.join(PROJECT_ROOT, "logs")
+        project_root = os.path.abspath(os.path.join(
+            os.path.dirname(__file__), "..", "..", ".."))
+        
+        self.path_logs = os.path.join(project_root, "logs")
         
         self.console = console
         

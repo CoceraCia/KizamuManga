@@ -1,7 +1,7 @@
 import os
 import re
 from zipfile import ZipFile
-from engine.logger import Logger
+from .logger import Logger
 
 logger = Logger("utils.general_tools")
 

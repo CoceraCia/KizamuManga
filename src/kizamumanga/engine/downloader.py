@@ -4,7 +4,7 @@ import asyncio
 import aiohttp
 from scraping.interface import ScraperInterface
 from scraping.base import MangaError
-from .logger import Logger
+from utils.logger import Logger
 
 
 class MangaDownloader:
