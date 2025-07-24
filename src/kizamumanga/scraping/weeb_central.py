@@ -1,8 +1,10 @@
 from bs4 import BeautifulSoup
-from playwright.async_api import async_playwright, Error, TimeoutError as PlaywrightTimeoutError
+
+from engine.logger import Logger
+from playwright.async_api import Error, TimeoutError as PlaywrightTimeoutError
 from utils.general_tools import extract_num
-from .scraper_interface import ScraperInterface
-from .scraper_base import ScraperBase
+from .interface import ScraperInterface
+from .base import ScraperBase, MangaError
 
 BASE_URL = "https://weebcentral.com"
 HEADERS = {
@@ -26,6 +28,7 @@ class WeebCentral(ScraperBase, ScraperInterface):
                            Default is True.
         """
         super().__init__()
+        self.logger = Logger("scraping.weeb_central")
 
 
     async def get_mangas_by_title(self, title: str) -> dict:
@@ -48,8 +51,8 @@ class WeebCentral(ScraperBase, ScraperInterface):
                     "#search-results > article:nth-child(1)", timeout=1500
                 )
                 html = await page.content()
-            except Error:
-                raise ValueError("Manga not found")
+            except Error as e:
+                raise MangaError("Manga not found") from e
 
         soup = BeautifulSoup(html, "html.parser")
         manga_names = soup.select("a.line-clamp-1")
