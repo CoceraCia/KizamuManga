@@ -1,4 +1,3 @@
-"""KizamuManga Engine Configuration Module"""
 import os
 import tempfile
 import yaml
@@ -11,60 +10,74 @@ AVAILABLE_WBSITES = ["weeb_central"]
 
 
 class Config:
-    """Configuration class for KizamuManga engine.
-        This class handles the configuration settings for the manga downloader.
-    """
+    """Configuration class for KizamuManga engine."""
 
     def __init__(self):
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
             self._config: dict = yaml.safe_load(f)
-        self.cbz_path = self._config.get("cbz_path") if self._config.get(
-            "cbz_path") is not None else os.path.join(PROJECT_ROOT, "manga_downloads")
-        self.manga_website = self._config.get("manga_website") if self._config.get(
-            "manga_website") is not None else "weeb_central"
-        self.multiple_tasks: int = int(self._config.get("multiple_tasks")) if self._config.get("multiple_tasks") is not None else 5
+        self._cbz_path = None
+        self._manga_website = None
+        self._multiple_tasks = None
+        self._width = None
+        self._height = None
 
-    def set_cbz_path(self, new_path: str) -> bool:
-        """Set the path for saving CBZ files."""
+    def get_cbz_path(self):
+        return self._config.get("cbz_path") or os.path.join(PROJECT_ROOT, "manga_downloads")
+
+    def set_cbz_path(self, new_path: str):
         if os.path.isdir(new_path):
+            self._cbz_path = new_path
             self._config["cbz_path"] = new_path
             self.save_data()
-            return True
         else:
-            print("Unable to retrieve directory, make sure that exists")
-            return False
+            raise ValueError("Directory does not exist")
+
+    def get_manga_website(self):
+        return self._config.get("manga_website") or "weeb_central"
 
     def set_manga_website(self, new_website):
-        """Set the manga website for scraping."""
-        if self.manga_web_is_available(new_website):
-            self._config["manga_website"] = new_website
+        if new_website in AVAILABLE_WBSITES:
+            self._manga_website = new_website
             self.save_data()
-            return True
         else:
-            print("NOT AVAILABLE\nAVAILABLE WEBSITES:")
-            self.show_available_websites()
-            return False
+            raise ValueError(f"Website not available. Choose from: {AVAILABLE_WBSITES}")
 
-    def set_mult_downloads(self, new_value):
-        """Set the number of multiple tasks for downloading."""
-        self._config["multiple_tasks"] = new_value
-        self.save_data()
+    def get_multiple_tasks(self):
+        return self._config.get("multiple_tasks") or 5
+
+    def set_multiple_tasks(self, new_value:int):
+        if isinstance(new_value, int) and new_value > 0:
+            self._multiple_tasks = new_value
+            self.save_data()
+        else:
+            raise ValueError("multiple_tasks must be a positive integer")
+
+    def get_width(self):
+        return self._config.get("width")
+
+    def set_width(self, value):
+        if isinstance(value, int) and value > 0:
+            self._width = value
+        else:
+            raise ValueError("Width must be a positive integer")
+
+    def get_height(self):
+        return self._config.get("height")
+
+    def set_height(self, value):
+        if isinstance(value, int) and value > 0:
+            self._height = value
+        else:
+            raise ValueError("Height must be a positive integer")
 
     def save_data(self):
-        """Save the current configuration to the config file."""
         with open(CONFIG_PATH, "w", encoding="utf-8") as f:
             yaml.safe_dump(self._config, f)
 
-    def manga_web_is_available(self, name: str) -> bool:
-        """Check if the given manga website is available."""
-        return True if name in AVAILABLE_WBSITES else False
-
     def get_config_params(self):
-        """Get the current configuration parameters."""
         return self._config
 
     @staticmethod
     def show_available_websites():
-        """Display the available manga websites."""
         for i, web in enumerate(AVAILABLE_WBSITES, start=1):
             print(f"{i} -  {web}")

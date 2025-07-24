@@ -5,6 +5,8 @@ import aiohttp
 from scraping.interface import ScraperInterface
 from scraping.base import MangaError
 from utils.logger import Logger
+from .image_converter import ImageConverter
+from .config import Config
 
 
 class MangaDownloader:
@@ -12,6 +14,7 @@ class MangaDownloader:
     def __init__(self, scraper:ScraperInterface):
         self._logger = Logger("engine.downloader")
         self.scraper = scraper
+        self.config = Config()
 
     async def download_chap(self, chapter_url:str, path:str) -> bool:
         """Download a chapter from the given URL and save it to the specified path."""
@@ -32,16 +35,25 @@ class MangaDownloader:
                                 url, timeout=aiohttp.ClientTimeout(total=5)
                             ) as r:
                                 content = await r.read()
+                                img_path = f'{path}/{img_name}.png'
                                 with open(
                                     f'{path}/{img_name}.png', "wb"
                                 ) as f:
                                     f.write(content)
+                                    self._logger.info(f"image downloaded at {img_path}")
+                                width = self.config.get_width()
+                                height = self.config.get_height()
+                                imgc = ImageConverter(img_path)
+                                if width is not None and height is not None:
+                                    self._logger.info(f"image resized at {img_path}")
+                                    await imgc.resize(width=width, height=height)
                                 break
+                                
                         except asyncio.TimeoutError:
                             self._logger.error(f"TimeoutError while downloading {img_name} from {url}")
                         except (FileNotFoundError):
                             self._logger.error("Download interrupted by user")
-            self._logger.info(f"Chapter downloaded successfully: {chapter_url}")
+            self._logger.info(f"Chapter downloaded successfully: {chapter_url} at {path}")
             return True
         except aiohttp.ClientError as e:
             self._logger.error(f"ClientError during download: {e}")
