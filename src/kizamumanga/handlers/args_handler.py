@@ -9,7 +9,7 @@ class ArgsHandler():
         # INITIALIZE MAIN PARSER
         self.logger = Logger("handlers.args_handler")
         self.parser = argparse.ArgumentParser(description="Manga scrapper")
-        self.subparsers = self.parser.add_subparsers(dest="command")
+        self.subparsers = self.parser.add_subparsers(dest="command", required=True)
         self.args = self._setup_args()
 
     def _setup_args(self):
@@ -22,16 +22,16 @@ class ArgsHandler():
         install = self.subparsers.add_parser("install", help="install a manga by it's name")
 
         # INSTALL ARGS
-        install.add_argument("--name",
+        install.add_argument("name",
             help="Install the manga by its name (e.g., One Piece)")
-        install.add_argument("--chap",
+        install.add_argument("chap",
             help="Chapters to download: a single number (e.g., 5), a range (e.g., 9-18)",
             nargs="?")
 
     def _search_args(self):
         sub_search = self.subparsers.add_parser("search", help="name of the manga to search")
         # SEARCH ARGS
-        sub_search.add_argument("--name", help="The name of a manga")
+        sub_search.add_argument("name", help="The name of a manga")
 
     def _config_args(self):
         config = self.subparsers.add_parser("config", help="Update tool configuration settings")
@@ -54,21 +54,22 @@ class ArgsHandler():
         )
         
         # DIMENSIONS
-        conf_parser = config.add_subparsers(dest="conf_comm")
+        conf_parser = config.add_subparsers(dest="dimensions_comm")
         conf_dimensions = conf_parser.add_parser("dimensions", help="set dimensions for the img")
         
         conf_dimensions.add_argument(
-            "--device",
-            help="Name of a preset device profile to automatically set image dimensions"
+            "device",
+            help="Name of a preset device profile to automatically set image dimensions",
+            nargs="?"
         )
 
-        config.add_argument(
+        conf_dimensions.add_argument(
             "--width",
             type=int,
             help="Custom image width (used when no device preset is selected)"
         )
 
-        config.add_argument(
+        conf_dimensions.add_argument(
             "--height",
             type=int,
             help="Custom image height (used when no device preset is selected)"
@@ -76,34 +77,43 @@ class ArgsHandler():
 
     def validate_args(self):
         error = None
-        if self.args.command is None:
-            error = "Invalid syntaxis: must be 'search', 'install' or 'config'"
-        else:
-            match self.args.command:
-                case "config":
-                    if self.args.website is not None and not ScraperBase.is_available(self.args.website):
-                        error = f"Invalid website: must be {ScraperBase.get_available_websites()}"
+    
+        match self.args.command:
+            case "install" | "search":
+                self.args.name = self.args.name.replace("-", " ")
+            case "config":
+                if self.args.dimensions_comm == "dimensions":
+                    if self.args.device and self.args.device not in AVAILABLE_DEVICES:
+                        error = f"Invalid device, select one of these: {self._retrieve_devices()}"
+                    else:
+                        self.args.height = AVAILABLE_DEVICES[self.args.device][0]
+                        self.args.width = AVAILABLE_DEVICES[self.args.device][1]
+                        
+                    if self.args.width or self.args.height:
+                        if self.args.width and self.args.height:
+                            if self.args.width < 0:
+                                error = "Invalid --width: must be a positive integer"
+                            elif self.args.height < 0:
+                                error = "Invalid --height: must be a positive integer"
+                        else:
+                            error = "You need to especify the width and height"
+                            
+                if self.args.website and not ScraperBase.is_available(self.args.website):
+                    error = f"Invalid website: must be {ScraperBase.get_available_websites()}"
 
-                    if self.args.multiple_tasks is not None:
-                        if not isinstance(self.args.multiple_tasks, int):
-                            self.parser.error("Invalid --multiple_tasks: must be an integer")
-                        elif self.args.multiple_tasks <= 0:
-                            self.parser.error(
-                            "Invalid --multiple_tasks: must be a positive integer greater than zero"
-                            )
-
-                    if self.args.width is not None:
-                        if not isinstance(self.args.width, int):
-                            error = "Invalid width: must be an integer"
-                        elif self.args.width < 0:
-                            error = "Invalid width: must be a positive integer"
-
-                    if self.args.height is not None:
-                        if not isinstance(self.args.height, int):
-                            self.parser.error("Invalid --height: must be an integer")
-                        elif self.args.height < 0:
-                            self.parser.error("Invalid --height: must be a positive integer")
-
-        if error is not None:
+                if self.args.multiple_tasks:
+                    if not isinstance(self.args.multiple_tasks, int):
+                        self.parser.error("Invalid --multiple_tasks: must be an integer")
+                    elif self.args.multiple_tasks <= 0:
+                        self.parser.error(
+                        "Invalid --multiple_tasks: must be a positive integer greater than zero"
+                        )
+        if error:
             self.logger.error(error)
             self.parser.error(error)
+
+    def _retrieve_devices(self):
+        nl = []
+        for i in AVAILABLE_DEVICES.keys():
+            nl.append(i)
+        return nl
