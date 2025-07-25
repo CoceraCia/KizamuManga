@@ -48,8 +48,8 @@ class MangaDownloader:
                                 ) as f:
                                     f.write(content)
                                     self._logger.info(f"image downloaded at {img_path}")
-                                width = self.config.get_width()
-                                height = self.config.get_height()
+                                width = self.config.width
+                                height = self.config.height
                                 imgc = ImageConverter(img_path)
                                 if width is not None and height is not None:
                                     self._logger.info(f"image resized at {img_path}")

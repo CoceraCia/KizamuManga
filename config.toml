@@ -1,0 +1,12 @@
+# Path to the CBZ file (manga archive). If left empty (""), the default path will be: <program_root>/manga_downloads
+cbz_path = ""
+
+# Viewer dimensions. Set to null to use the original size of the images downloaded from the website.
+height = 1680
+width = 1264
+
+# Manga source website
+manga_website = "weeb_central"
+
+# Whether to allow multiple tasks (true/false). If left empty (""), the default value is 5.
+multiple_tasks = 5
