@@ -11,7 +11,7 @@ from scraping import WeebCentral, ScraperInterface, MangaError
 from utils import LoadingSpinner, export_to_cbz, Ascii
 from utils.logger import Logger
 from .downloader import MangaDownloader
-from .config import Config, BASE_PNGS_PATH, AVAILABLE_WBSITES, PROJECT_ROOT
+from .config import Config, BASE_PNGS_PATH
 
 
 class Runner:
@@ -22,11 +22,11 @@ class Runner:
     def __init__(self):
         self.logger = Logger("engine.runner")
         # Check if there's args
-        self.args = ArgsHandler().setup_args()
-        if self.args.command is None:
-            print("Invalid syntaxis: must be 'search', 'install' or 'config'")
-            self.logger.error("No arguments provided")
-            raise SyntaxError
+        args_handler = ArgsHandler()
+        print(args_handler.args)
+        args_handler.validate_args()
+        self.args = args_handler.args
+        
         self.logger.info(f"Arguments received: {self.args}")
         self.logger.info(f"Temporary PNGs path created: {BASE_PNGS_PATH}")
 
@@ -48,19 +48,16 @@ class Runner:
     def __set_up(self):
         # retrieve the selected scrapper
         self.ws: ScraperInterface = None
-        match self.config.manga_website:
+        match self.config.get_manga_website():
             case "weeb_central":
                 self.ws = WeebCentral()
-            case _:
-                print(f"Please choose a valid website: {AVAILABLE_WBSITES}")
-                raise ValueError(f"The website you selected is not available: {self.config.manga_website}")
         self.logger.info(f"Scraper initialized and selected: {self.ws.__class__.__name__}")
 
         # Initialize
         self.mdownloader = MangaDownloader(self.ws)
         self.logger.info("MangaDownloader initialized")
-        self.sem = asyncio.Semaphore(self.config.multiple_tasks)
-        self.logger.info(f"Semaphore initialized with {self.config.multiple_tasks} tasks")
+        self.sem = asyncio.Semaphore(self.config.get_multiple_tasks())
+        self.logger.info(f"Semaphore initialized with {self.config.get_multiple_tasks()} tasks")
         self.ls = LoadingSpinner()
         self.logger.info("LoadingSpinner initialized")
 
@@ -80,6 +77,9 @@ class Runner:
                 if self.args.command == "install":
                     await self.install(chapters)
                     self.logger.info("Manga chapters installed")
+        except FileNotFoundError as e:
+            self.logger.exception(f"FileNotFoundError during run(): {e}")
+            raise KeyboardInterrupt from e
         except socket.gaierror as e:
             self.logger.exception(f"Network error: {e}")
             raise KeyboardInterrupt from e
@@ -87,17 +87,15 @@ class Runner:
             self.logger.exception(f"Socket error: {e}")
             raise KeyboardInterrupt from e
         except MangaError as e:
-            self.logger.exception(f"Manga error: {e}")  
+            self.logger.exception(f"Manga error: {e}")
+            raise KeyboardInterrupt from e
         except asyncio.exceptions.CancelledError as e:
             self.logger.exception(f"CancelledError during run(): {e}")
             raise KeyboardInterrupt from e
         except ValueError as e:
             self.logger.exception(f"ValueError during run(): {e}")
             raise KeyboardInterrupt from e
-        except FileNotFoundError as e:
-            self.logger.exception(f"FileNotFoundError during run(): {e}")
-            raise KeyboardInterrupt from e
-        except (Exception, BaseException) as e:
+        except Exception as e:
             self.logger.exception(f"Unexpected error during run(): {e}")
             raise KeyboardInterrupt from e
         finally:
@@ -112,7 +110,7 @@ class Runner:
             self.config.set_cbz_path(self.args.cbz_path)
             self.logger.info(f"CBZ path changed to {self.args.cbz_path}")
         if self.args.multiple_tasks is not None:
-            self.config.set_mult_downloads(self.args.multiple_tasks)
+            self.config.set_multiple_tasks(self.args.multiple_tasks)
             self.logger.info(
                 f"Multiple tasks changed to {self.args.multiple_tasks}")
 
@@ -172,7 +170,7 @@ class Runner:
         """Method to install the selected manga chapters."""
         manga_name = self.args.name
         download_all = True if self.args.chap is None else False
-        manga_path = f"{self.config.cbz_path}/{manga_name}"
+        manga_path = f"{self.config.get_cbz_path()}/{manga_name}"
         os.makedirs(manga_path, exist_ok=True)
         tasks = []
 

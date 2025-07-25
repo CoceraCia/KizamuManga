@@ -2,16 +2,24 @@
 This class uses the ScraperInterface to obtain chapter content and download images."""
 import asyncio
 import aiohttp
+import ssl
 from scraping.interface import ScraperInterface
 from scraping.base import MangaError
 from utils.logger import Logger
+from .image_converter import ImageConverter
+from .config import Config
 
 
 class MangaDownloader:
     """MangaDownloader class to handle downloading manga chapters."""
-    def __init__(self, scraper:ScraperInterface):
+    def __init__(self, scraper:ScraperInterface, verify=True):
         self._logger = Logger("engine.downloader")
         self.scraper = scraper
+        self.config = Config()
+        self.ssl_context = ssl.create_default_context()
+        if verify is False:
+            self.ssl_context.check_hostname = False
+            self.ssl_context.verify_mode = ssl.CERT_NONE
 
     async def download_chap(self, chapter_url:str, path:str) -> bool:
         """Download a chapter from the given URL and save it to the specified path."""
@@ -29,19 +37,30 @@ class MangaDownloader:
                     while True:
                         try:
                             async with session.get(
-                                url, timeout=aiohttp.ClientTimeout(total=5)
+                                url,
+                                ssl=self.ssl_context,
+                                timeout=aiohttp.ClientTimeout(total=5)
                             ) as r:
                                 content = await r.read()
+                                img_path = f'{path}/{img_name}.png'
                                 with open(
                                     f'{path}/{img_name}.png', "wb"
                                 ) as f:
                                     f.write(content)
+                                    self._logger.info(f"image downloaded at {img_path}")
+                                width = self.config.get_width()
+                                height = self.config.get_height()
+                                imgc = ImageConverter(img_path)
+                                if width is not None and height is not None:
+                                    self._logger.info(f"image resized at {img_path}")
+                                    await imgc.resize(width=width, height=height)
                                 break
+                                
                         except asyncio.TimeoutError:
                             self._logger.error(f"TimeoutError while downloading {img_name} from {url}")
                         except (FileNotFoundError):
                             self._logger.error("Download interrupted by user")
-            self._logger.info(f"Chapter downloaded successfully: {chapter_url}")
+            self._logger.info(f"Chapter downloaded successfully: {chapter_url} at {path}")
             return True
         except aiohttp.ClientError as e:
             self._logger.error(f"ClientError during download: {e}")

@@ -1,6 +1,9 @@
 import asyncio
 from playwright.async_api import async_playwright
 from utils.logger import Logger
+
+AVAILABLE_WBSITES = ["weeb_central"]
+
 class MangaError(Exception):
     """Custom exception for manga-related errors."""
 class ScraperBase():
@@ -34,3 +37,17 @@ class ScraperBase():
             self.logger.info("Browser closed successfully")
         except Exception as e:
             self.logger.exception(f"Error closing browser: {type(e).__name__}: {e}")
+
+    @staticmethod
+    def is_available(web:str)->bool:
+        return True if web in AVAILABLE_WBSITES else False
+    @staticmethod
+    def show_available_websites():
+        print("AVAILABLE WEBSITES")
+        for w in AVAILABLE_WBSITES:
+            print(f" - {w}")
+            
+    @staticmethod
+    def get_available_websites() -> list:
+        return AVAILABLE_WBSITES
+    
