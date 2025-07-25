@@ -23,6 +23,7 @@ class Runner:
         self.logger = Logger("engine.runner")
         # Check if there's args
         args_handler = ArgsHandler()
+        print(args_handler.args)
         args_handler.validate_args()
         self.args = args_handler.args
         
