@@ -23,7 +23,7 @@ class Runner:
         self.logger = Logger("engine.runner")
         # Check if there's args
         args_handler = ArgsHandler()
-        print(args_handler.args)
+
         args_handler.validate_args()
         self.args = args_handler.args
         
@@ -103,16 +103,22 @@ class Runner:
 
     async def modify_config(self) -> bool:
         """Method to modify the configuration settings."""
-        if self.args.website is not None:
-            self.config.set_manga_website(self.args.website)
-            self.logger.info(f"Website changed to {self.args.website}")
-        if self.args.cbz_path is not None:
-            self.config.set_cbz_path(self.args.cbz_path)
-            self.logger.info(f"CBZ path changed to {self.args.cbz_path}")
-        if self.args.multiple_tasks is not None:
-            self.config.set_multiple_tasks(self.args.multiple_tasks)
-            self.logger.info(
-                f"Multiple tasks changed to {self.args.multiple_tasks}")
+        if self.args.command == "config":
+            if self.args.dimensions_comm:
+                if self.args.device or self.width:
+                    self.config.set_width(self.args.width)
+                    self.config.set_height(self.args.height)
+                    self.logger.info(f"dimensions changed to {self.args.width}x{self.args.height}")
+            if self.args.website:
+                self.config.set_manga_website(self.args.website)
+                self.logger.info(f"Website changed to {self.args.website}")
+            if self.args.cbz_path:
+                self.config.set_cbz_path(self.args.cbz_path)
+                self.logger.info(f"CBZ path changed to {self.args.cbz_path}")
+            if self.args.multiple_tasks:
+                self.config.set_multiple_tasks(self.args.multiple_tasks)
+                self.logger.info(
+                    f"Multiple tasks changed to {self.args.multiple_tasks}")
 
     async def search(self) -> dict:
         """Method to search for mangas and retrieve chapters."""
