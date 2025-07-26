@@ -1,8 +1,9 @@
 """MangaDownloader class to handle downloading manga chapters.
 This class uses the ScraperInterface to obtain chapter content and download images."""
 import asyncio
-import aiohttp
 import ssl
+import aiohttp
+
 from scraping.interface import ScraperInterface
 from scraping.base import MangaError
 from utils.logger import Logger

@@ -1,7 +1,6 @@
 """Config module for loading and saving KizamuManga settings."""
 
 import os
-import tempfile
 import tomlkit
 
 PROJECT_ROOT = os.path.abspath(

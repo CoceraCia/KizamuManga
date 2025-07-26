@@ -3,7 +3,6 @@ KizamuManga - Engine runner module for managing manga downloads."""
 
 import asyncio
 import os
-import re
 import shutil
 import socket
 import tempfile
@@ -180,12 +179,24 @@ class Runner:
             )
             if view_all_chapters:
                 self.logger.info("User chose to view all chapters")
-                for chap in chapters.keys():
-                    print(chap)
+                for i, chap in enumerate(chapters.keys(), start=1):
+                    print(f"{i} - {chap}")
         return chapters
 
     async def install(self, chapters: dict):
         """Method to install the selected manga chapters."""
+        if isinstance(self.args.chap, int):
+            if self.args.chap > len(chapters):
+                print(f"chapter doesn't exists. Chapters_available:{len(chapters)}")
+                self.logger.error(f"Chapter doesn't exists: {self.args.chap}")
+                raise ValueError("Chapter doesn't exists")
+        else:
+            if self.args.chap[1] > len(chapters):
+                print(f"Invalid range. Chapters_available:{len(chapters)}")
+                self.logger.error(
+                    f"Invalid chapter range: {self.args.chap} when searching for {len(chapters)}chapters"
+                    )
+                raise ValueError("Invalid chapter range")
         manga_name = self.args.name
         download_all = True if self.args.chap is None else False
         manga_path = f"{self.config.cbz_path}/{manga_name}"
@@ -206,34 +217,36 @@ class Runner:
                     )
                 )
         else:
-            pattern = r"^(\d+)-(\d+)$"
-            if not re.match(pattern, self.args.chap) and not self.args.chap.isdigit():
-                print(
-                    "Invalid chapters format.\nREMEMBER-> a single number (e.g., 5), a range (e.g., 9-18), or 'all' for all chapters"
-                )
-                self.logger.debug(
-                    f"Invalid chapter range format trying to download {self.args.name}, with chapters {self.args.chap}"
-                )
-                raise ValueError
-            
-            chap_to_download = (self.args.chap.split("-") if chap ==)
-
-            self.logger.info(f"Downloading chapters in range: {chap_to_download}")
+            self.logger.info(f"Downloading chapters in range: {self.args.chap}")
             for i, (chap, href) in enumerate(chapters.items(), start=1):
-                if i >= int(chap_to_download[0]) and i <= int(chap_to_download[1]):
-                    pngs_path = f"{self.base_pngs_path}/{manga_name}/{chap}"
-                    tasks.append(
-                        self.__download_chap(
-                            pngs_path=pngs_path,
-                            manga_path=manga_path,
-                            manga_name=manga_name,
-                            chap=chap,
-                            chap_url=href,
+                if isinstance(self.args.chap, list):
+                    if i >= int(self.args.chap[0]) and i <= int(self.args.chap[1]):
+                        pngs_path = f"{self.base_pngs_path}/{manga_name}/{chap}"
+                        tasks.append(
+                            self.__download_chap(
+                                pngs_path=pngs_path,
+                                manga_path=manga_path,
+                                manga_name=manga_name,
+                                chap=chap,
+                                chap_url=href,
+                            )
                         )
-                    )
+                else:
+                    if i == self.args.chap:
+                        pngs_path = f"{self.base_pngs_path}/{manga_name}/{chap}"
+                        tasks.append(
+                            self.__download_chap(
+                                pngs_path=pngs_path,
+                                manga_path=manga_path,
+                                manga_name=manga_name,
+                                chap=chap,
+                                chap_url=href,
+                            )
+                        )
         await asyncio.gather(*tasks)
         self.logger.info(f"All tasks completed for {manga_name}")
         Ascii().thank_you_for_downloading()
+        print(f"Chapter {self.args.chap} downloaded at {manga_path}")
 
     async def close(self):
         """Method to close the runner and clean up resources."""

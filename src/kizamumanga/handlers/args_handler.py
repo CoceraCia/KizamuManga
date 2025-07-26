@@ -1,4 +1,5 @@
 import argparse
+import re
 from utils import Logger
 from scraping import ScraperBase
 
@@ -36,7 +37,7 @@ class ArgsHandler():
     def _config_args(self):
         config = self.subparsers.add_parser("config", help="Update tool configuration settings")
         conf_parser = config.add_subparsers(dest="conf_comm", required=True)
-        
+
         # ----------------GENERAL ARGS------------
         conf_gen = conf_parser.add_parser("general", help="General configuration setting")
         conf_gen.add_argument(
@@ -81,6 +82,25 @@ class ArgsHandler():
         match self.args.command:
             case "install" | "search":
                 self.args.name = self.args.name.replace("-", " ")
+                if self.args.chap :
+                    pattern = r"^(\d+)-(\d+)$"
+                    if not re.match(pattern, self.args.chap) and not self.args.chap.isdigit():
+                        error = "Invalid chapters format"
+                        error += "\nREMEMBER-> a single number (e.g., 5), a range (e.g., 9-18), or 'all' for all chapters"
+                        self.logger.debug(
+                            f"Invalid chapter range format trying to download {self.args.name}, with chapters {self.args.chap}"
+                        )
+                        raise ValueError("Invalid chapter format")
+                    chap = self.args.chap.split("-")
+                    if len(chap) > 1:
+                        chap[0] =  int(chap[0])
+                        chap[1] = int(chap[1])
+                        self.args.chap = chap
+                        if (chap[0] > chap[1]):
+                            error = "invalid range, firs number cannot be greater than the second one"
+                    else:
+                        self.args.chap = int(chap[0])
+
             case "config":
                 if self.args.conf_comm == "dimensions":
                     if self.args.device and self.args.device not in AVAILABLE_DEVICES:
