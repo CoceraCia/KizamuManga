@@ -1,13 +1,12 @@
 """Config module for loading and saving KizamuManga settings."""
 
 import os
-import tempfile
-import yaml
+import tomlkit
 
-PROJECT_ROOT = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), "..", "..", ".."))
-CONFIG_PATH = os.path.join(PROJECT_ROOT, "config.yaml")
-BASE_PNGS_PATH = tempfile.mkdtemp()
+PROJECT_ROOT = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "..")
+)
+CONFIG_PATH = os.path.join(PROJECT_ROOT, "config.toml")
 
 
 class Config:
@@ -15,68 +14,80 @@ class Config:
 
     def __init__(self):
         """Initialize config by loading from YAML file."""
+        self._config = None
+        self.load_toml()
+
+    def load_toml(self):
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-            self._config: dict = yaml.safe_load(f)
-        self._cbz_path = None
-        self._manga_website = None
-        self._multiple_tasks = None
-        self._width = None
-        self._height = None
+            self._config = tomlkit.parse(f.read())
 
-    def get_cbz_path(self):
-        """Get path for storing CBZ files."""
-        return self._config.get("cbz_path") or os.path.join(PROJECT_ROOT, "manga_downloads")
-
-    def set_cbz_path(self, new_path: str):
-        """Set path for CBZ files and save."""
-        if os.path.isdir(new_path):
-            self._cbz_path = new_path
-            self._config["cbz_path"] = new_path
-            self.save_data()
-        else:
-            raise ValueError("Directory does not exist")
-
-    def get_manga_website(self):
-        """Get selected manga website."""
-        return self._config.get("manga_website") or "weeb_central"
-
-    def set_manga_website(self, new_website):
-        """Set manga website and save."""
-        self._config["manga_website"] = new_website
-        self.save_data()
-
-    def get_multiple_tasks(self):
-        """Get configured number of concurrent tasks."""
-        return self._config.get("multiple_tasks") or 5
-
-    def set_multiple_tasks(self, new_value: int):
-        """Set number of concurrent tasks and save."""
-        self._config["multiple_tasks"] = new_value
-        self.save_data()
-
-    def get_width(self):
-        """Get configured image width."""
-        return self._config.get("width")
-
-    def set_width(self, value):
-        """Set image width and save."""
-        self._config["width"] = value
-        self.save_data()
-
-    def get_height(self):
-        """Get configured image height."""
-        return self._config.get("height")
-
-    def set_height(self, value):
-        """Set image height and save."""
-        self._config["height"] = value
-        self.save_data()
-
-    def save_data(self):
-        """Save current config to YAML file."""
+    def save_toml(self):
         with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-            yaml.safe_dump(self._config, f)
+            f.write(tomlkit.dumps(self._config))
 
-    def get_config_params(self):
-        """Return entire config dictionary."""
+    # -----------PROPERTIES------------
+    @property
+    def config(self) -> tomlkit.TOMLDocument:
         return self._config
+
+    # ------------cbz_path---------------
+    @property
+    def cbz_path(self) -> str:
+        return (
+            self._config["cbz_path"]
+            if self._config["cbz_path"] != ""
+            else os.path.join(PROJECT_ROOT, "manga_downloads")
+        )
+
+    @cbz_path.setter
+    def cbz_path(self, value):
+        self._config["cbz_path"] = value
+        self.save_toml()
+
+    # ------------manga_website-----------
+    @property
+    def manga_website(self) -> str:
+        return (
+            self._config["manga_website"]
+            if self._config["manga_website"] != ""
+            else "weeb_central"
+        )
+
+    @manga_website.setter
+    def manga_website(self, value):
+        self._config["manga_website"] = value
+        self.save_toml()
+
+    # -----------multiple_tasks-----------
+    @property
+    def multiple_tasks(self) -> int:
+        return (
+            int(self._config["multiple_tasks"])
+            if self._config["multiple_tasks"] != ""
+            else 5
+        )
+
+    @multiple_tasks.setter
+    def multiple_tasks(self, value):
+        self._config["multiple_tasks"] = value
+        self.save_toml()
+
+    # -------------width-------------
+    @property
+    def width(self) -> int:
+        return int(self._config["width"]) if self._config["width"] != "" else None
+
+    @width.setter
+    def width(self, value):
+        self._config["width"] = value
+        self.save_toml()
+
+    # ----------height----------------
+    @property
+    def height(self):
+        return int(self._config["height"]) if self._config["height"] != "" else None
+
+    @height.setter
+    def height(self, value):
+        self._config["height"] = value
+        self.save_toml()

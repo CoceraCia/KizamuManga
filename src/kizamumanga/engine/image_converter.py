@@ -1,5 +1,5 @@
 from PIL import Image
-from PIL.Image import Resampling
+
 class ImageConverter():
     def __init__(self, image_path:str):
         self.image_path = image_path
@@ -16,5 +16,5 @@ class ImageConverter():
             else:
                 width = round(height * img_ratio)
 
-            resized = img.resize((width, height), resample = Resampling.LANCZOS)
+            resized = img.resize((width, height), resample = Image.Resampling.LANCZOS)
             resized.save(self.image_path)

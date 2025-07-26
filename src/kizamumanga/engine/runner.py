@@ -1,17 +1,18 @@
 """src/kizamumanga/engine/runner.py
 KizamuManga - Engine runner module for managing manga downloads."""
+
 import asyncio
 import os
-import re
 import shutil
 import socket
+import tempfile
 
 from handlers import ArgsHandler
 from scraping import WeebCentral, ScraperInterface, MangaError
 from utils import LoadingSpinner, export_to_cbz, Ascii
 from utils.logger import Logger
 from .downloader import MangaDownloader
-from .config import Config, BASE_PNGS_PATH
+from .config import Config
 
 
 class Runner:
@@ -23,17 +24,15 @@ class Runner:
         self.logger = Logger("engine.runner")
         # Check if there's args
         args_handler = ArgsHandler()
-
+        
         args_handler.validate_args()
         self.args = args_handler.args
-        
+
         self.logger.info(f"Arguments received: {self.args}")
-        self.logger.info(f"Temporary PNGs path created: {BASE_PNGS_PATH}")
 
-        # retrieve config.yaml atr
+        # retrieve config.toml atr
         self.config: Config = Config()
-        self.logger.info(f"Config loaded: {self.config.get_config_params()}")
-
+        self.logger.info(f"Config loaded: {self.config.config}")
         # retrieve the selected scrapper
         self.ws: ScraperInterface = None
 
@@ -41,29 +40,37 @@ class Runner:
         self.mdownloader: MangaDownloader = None
         self.sem: asyncio.Semaphore = None
         self.ls: LoadingSpinner = None
-
+        self.base_pngs_path = None
+        
         if self.args.command != "config":
             self.__set_up()
 
     def __set_up(self):
         # retrieve the selected scrapper
         self.ws: ScraperInterface = None
-        match self.config.get_manga_website():
+        match self.config.manga_website:
             case "weeb_central":
                 self.ws = WeebCentral()
-        self.logger.info(f"Scraper initialized and selected: {self.ws.__class__.__name__}")
+        self.logger.info(
+            f"Scraper initialized and selected: {self.ws.__class__.__name__}"
+        )
 
         # Initialize
         self.mdownloader = MangaDownloader(self.ws)
         self.logger.info("MangaDownloader initialized")
-        self.sem = asyncio.Semaphore(self.config.get_multiple_tasks())
-        self.logger.info(f"Semaphore initialized with {self.config.get_multiple_tasks()} tasks")
+        self.sem = asyncio.Semaphore(self.config.multiple_tasks)
+        self.logger.info(
+            f"Semaphore initialized with {self.config.multiple_tasks} tasks"
+        )
         self.ls = LoadingSpinner()
         self.logger.info("LoadingSpinner initialized")
+
 
     async def run(self):
         """Main method to run the manga downloading process."""
         try:
+            self.base_pngs_path = tempfile.mkdtemp()
+            self.logger.info(f"Temporary PNGs path created: {self.base_pngs_path}")
             if self.args.command == "config":
                 await self.modify_config()
                 return
@@ -104,21 +111,25 @@ class Runner:
     async def modify_config(self) -> bool:
         """Method to modify the configuration settings."""
         if self.args.command == "config":
-            if self.args.dimensions_comm:
-                if self.args.device or self.width:
-                    self.config.set_width(self.args.width)
-                    self.config.set_height(self.args.height)
-                    self.logger.info(f"dimensions changed to {self.args.width}x{self.args.height}")
-            if self.args.website:
-                self.config.set_manga_website(self.args.website)
-                self.logger.info(f"Website changed to {self.args.website}")
-            if self.args.cbz_path:
-                self.config.set_cbz_path(self.args.cbz_path)
-                self.logger.info(f"CBZ path changed to {self.args.cbz_path}")
-            if self.args.multiple_tasks:
-                self.config.set_multiple_tasks(self.args.multiple_tasks)
-                self.logger.info(
-                    f"Multiple tasks changed to {self.args.multiple_tasks}")
+            if self.args.conf_comm == "dimensions":
+                if self.args.device or self.args.width:
+                    self.config.width = self.args.width
+                    self.config.height = self.args.height
+                    self.logger.info(
+                        f"dimensions changed to {self.args.width}x{self.args.height}"
+                    )
+            else:
+                if self.args.website:
+                    self.config.manga_website = self.args.website
+                    self.logger.info(f"Website changed to {self.args.website}")
+                if self.args.cbz_path:
+                    self.config.cbz_path = self.args.cbz_path
+                    self.logger.info(f"CBZ path changed to {self.args.cbz_path}")
+                if self.args.multiple_tasks:
+                    self.config.multiple_tasks = self.args.multiple_tasks
+                    self.logger.info(
+                        f"Multiple tasks changed to {self.args.multiple_tasks}"
+                    )
 
     async def search(self) -> dict:
         """Method to search for mangas and retrieve chapters."""
@@ -153,7 +164,7 @@ class Runner:
         chapters = await self.ws.get_chapters_by_mangaurl(href)
         self.ls.end()
         self.logger.info(f"Chapters retrieved: {len(chapters)}")
-        
+
         if self.args.command == "search":
             print(f"AVAILABLE CHAPTERS: {len(chapters.keys())}")
             view_all_chapters = (
@@ -168,22 +179,34 @@ class Runner:
             )
             if view_all_chapters:
                 self.logger.info("User chose to view all chapters")
-                for chap in chapters.keys():
-                    print(chap)
+                for i, chap in enumerate(chapters.keys(), start=1):
+                    print(f"{i} - {chap}")
         return chapters
 
     async def install(self, chapters: dict):
         """Method to install the selected manga chapters."""
+        if isinstance(self.args.chap, int):
+            if self.args.chap > len(chapters):
+                print(f"chapter doesn't exists. Chapters_available:{len(chapters)}")
+                self.logger.error(f"Chapter doesn't exists: {self.args.chap}")
+                raise ValueError("Chapter doesn't exists")
+        else:
+            if self.args.chap[1] > len(chapters):
+                print(f"Invalid range. Chapters_available:{len(chapters)}")
+                self.logger.error(
+                    f"Invalid chapter range: {self.args.chap} when searching for {len(chapters)}chapters"
+                    )
+                raise ValueError("Invalid chapter range")
         manga_name = self.args.name
         download_all = True if self.args.chap is None else False
-        manga_path = f"{self.config.get_cbz_path()}/{manga_name}"
+        manga_path = f"{self.config.cbz_path}/{manga_name}"
         os.makedirs(manga_path, exist_ok=True)
         tasks = []
 
         if download_all is True:
             self.logger.info("Downloading all chapters")
             for chap, href in chapters.items():
-                pngs_path = f"{BASE_PNGS_PATH}/{manga_name}/{chap}"
+                pngs_path = f"{self.base_pngs_path}/{manga_name}/{chap}"
                 tasks.append(
                     self.__download_chap(
                         pngs_path=pngs_path,
@@ -194,32 +217,36 @@ class Runner:
                     )
                 )
         else:
-            pattern = r"^(\d+)-(\d+)$"
-            if not re.match(pattern, self.args.chap):
-                print(
-                    "Invalid chapters format.\nREMEMBER-> a single number (e.g., 5), a range (e.g., 9-18), or 'all' for all chapters"
-                )
-                self.logger.debug(
-                    f"Invalid chapter range format trying to download {self.args.name}, with chapters {self.args.chap}")
-                raise ValueError
-            chap_to_download = self.args.chap.split("-")
-
-            self.logger.info(f"Downloading chapters in range: {chap_to_download}")
+            self.logger.info(f"Downloading chapters in range: {self.args.chap}")
             for i, (chap, href) in enumerate(chapters.items(), start=1):
-                if i >= int(chap_to_download[0]) and i <= int(chap_to_download[1]):
-                    pngs_path = f"{BASE_PNGS_PATH}/{manga_name}/{chap}"
-                    tasks.append(
-                        self.__download_chap(
-                            pngs_path=pngs_path,
-                            manga_path=manga_path,
-                            manga_name=manga_name,
-                            chap=chap,
-                            chap_url=href,
+                if isinstance(self.args.chap, list):
+                    if i >= int(self.args.chap[0]) and i <= int(self.args.chap[1]):
+                        pngs_path = f"{self.base_pngs_path}/{manga_name}/{chap}"
+                        tasks.append(
+                            self.__download_chap(
+                                pngs_path=pngs_path,
+                                manga_path=manga_path,
+                                manga_name=manga_name,
+                                chap=chap,
+                                chap_url=href,
+                            )
                         )
-                    )
+                else:
+                    if i == self.args.chap:
+                        pngs_path = f"{self.base_pngs_path}/{manga_name}/{chap}"
+                        tasks.append(
+                            self.__download_chap(
+                                pngs_path=pngs_path,
+                                manga_path=manga_path,
+                                manga_name=manga_name,
+                                chap=chap,
+                                chap_url=href,
+                            )
+                        )
         await asyncio.gather(*tasks)
         self.logger.info(f"All tasks completed for {manga_name}")
         Ascii().thank_you_for_downloading()
+        print(f"Chapter {self.args.chap} downloaded at {manga_path}")
 
     async def close(self):
         """Method to close the runner and clean up resources."""
@@ -228,9 +255,9 @@ class Runner:
                 if self.ls.state is not None:
                     self.ls.end()
                     self.logger.info("LoadingSpinner ended")
-                if os.path.exists(BASE_PNGS_PATH):
-                    shutil.rmtree(BASE_PNGS_PATH)
-                    self.logger.info(f"Temporary PNGs path {BASE_PNGS_PATH} removed")
+                if os.path.exists(self.base_pngs_path):
+                    shutil.rmtree(self.base_pngs_path)
+                    self.logger.info(f"Temporary PNGs path {self.base_pngs_path} removed")
                 await asyncio.shield(self.ws.close())
                 self.logger.info("Scraper closed")
 
@@ -258,8 +285,7 @@ class Runner:
                 self.ls.start("Downloading")
                 os.makedirs(pngs_path, exist_ok=True)
                 if await asyncio.shield(
-                    self.mdownloader.download_chap(
-                        path=pngs_path, chapter_url=chap_url)
+                    self.mdownloader.download_chap(path=pngs_path, chapter_url=chap_url)
                 ):
                     self.logger.info(f"Chapter {chap} downloaded successfully")
                 else:

@@ -1,4 +1,5 @@
 import argparse
+import re
 from utils import Logger
 from scraping import ScraperBase
 
@@ -35,26 +36,27 @@ class ArgsHandler():
 
     def _config_args(self):
         config = self.subparsers.add_parser("config", help="Update tool configuration settings")
+        conf_parser = config.add_subparsers(dest="conf_comm", required=True)
 
-        # ARGS
-        config.add_argument(
+        # ----------------GENERAL ARGS------------
+        conf_gen = conf_parser.add_parser("general", help="General configuration setting")
+        conf_gen.add_argument(
             "--website",
             help="Target website URL where the manga scraping will take place"
         )
 
-        config.add_argument(
+        conf_gen.add_argument(
             "--cbz_path",
             help="Directory path where downloaded manga CBZ files are stored"
         )
 
-        config.add_argument(
+        conf_gen.add_argument(
             "--multiple_tasks",
             type=int,
             help="Number of simultaneous downloads to run in parallel"
         )
         
-        # DIMENSIONS
-        conf_parser = config.add_subparsers(dest="dimensions_comm")
+        # ---------------DIMENSIONS--------------
         conf_dimensions = conf_parser.add_parser("dimensions", help="set dimensions for the img")
         
         conf_dimensions.add_argument(
@@ -77,18 +79,36 @@ class ArgsHandler():
 
     def validate_args(self):
         error = None
-    
         match self.args.command:
             case "install" | "search":
                 self.args.name = self.args.name.replace("-", " ")
+                if self.args.chap :
+                    pattern = r"^(\d+)-(\d+)$"
+                    if not re.match(pattern, self.args.chap) and not self.args.chap.isdigit():
+                        error = "Invalid chapters format"
+                        error += "\nREMEMBER-> a single number (e.g., 5), a range (e.g., 9-18), or 'all' for all chapters"
+                        self.logger.debug(
+                            f"Invalid chapter range format trying to download {self.args.name}, with chapters {self.args.chap}"
+                        )
+                        raise ValueError("Invalid chapter format")
+                    chap = self.args.chap.split("-")
+                    if len(chap) > 1:
+                        chap[0] =  int(chap[0])
+                        chap[1] = int(chap[1])
+                        self.args.chap = chap
+                        if (chap[0] > chap[1]):
+                            error = "invalid range, firs number cannot be greater than the second one"
+                    else:
+                        self.args.chap = int(chap[0])
+
             case "config":
-                if self.args.dimensions_comm == "dimensions":
+                if self.args.conf_comm == "dimensions":
                     if self.args.device and self.args.device not in AVAILABLE_DEVICES:
                         error = f"Invalid device, select one of these: {self._retrieve_devices()}"
                     else:
                         self.args.height = AVAILABLE_DEVICES[self.args.device][0]
                         self.args.width = AVAILABLE_DEVICES[self.args.device][1]
-                        
+                
                     if self.args.width or self.args.height:
                         if self.args.width and self.args.height:
                             if self.args.width < 0:
@@ -97,17 +117,17 @@ class ArgsHandler():
                                 error = "Invalid --height: must be a positive integer"
                         else:
                             error = "You need to especify the width and height"
-                            
-                if self.args.website and not ScraperBase.is_available(self.args.website):
-                    error = f"Invalid website: must be {ScraperBase.get_available_websites()}"
+                else:         
+                    if self.args.website and not ScraperBase.is_available(self.args.website):
+                        error = f"Invalid website: must be {ScraperBase.get_available_websites()}"
 
-                if self.args.multiple_tasks:
-                    if not isinstance(self.args.multiple_tasks, int):
-                        self.parser.error("Invalid --multiple_tasks: must be an integer")
-                    elif self.args.multiple_tasks <= 0:
-                        self.parser.error(
-                        "Invalid --multiple_tasks: must be a positive integer greater than zero"
-                        )
+                    if self.args.multiple_tasks:
+                        if not isinstance(self.args.multiple_tasks, int):
+                            self.parser.error("Invalid --multiple_tasks: must be an integer")
+                        elif self.args.multiple_tasks <= 0:
+                            self.parser.error(
+                            "Invalid --multiple_tasks: must be a positive integer greater than zero"
+                            )
         if error:
             self.logger.error(error)
             self.parser.error(error)
