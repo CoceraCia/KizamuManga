@@ -52,6 +52,8 @@ class MangaDownloader:
                                 width = self.config.width
                                 height = self.config.height
                                 imgc = ImageConverter(img_path)
+                                if not self.config.color:
+                                    await imgc.grayscale()
                                 if width is not None and height is not None:
                                     self._logger.info(f"image resized at {img_path}")
                                     await imgc.resize(width=width, height=height)

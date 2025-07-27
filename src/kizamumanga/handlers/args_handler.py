@@ -46,6 +46,11 @@ class ArgsHandler():
         )
 
         conf_gen.add_argument(
+            "--color",
+            help="Define 'true' if wanted to export image with color else grayscale will be applied"
+        )
+
+        conf_gen.add_argument(
             "--cbz_path",
             help="Directory path where downloaded manga CBZ files are stored"
         )
@@ -117,7 +122,12 @@ class ArgsHandler():
                                 error = "Invalid --height: must be a positive integer"
                         else:
                             error = "You need to especify the width and height"
-                else:         
+                else:
+                    if self.args.color:
+                        if self.args.color.lower() in ("yes", "y", "true", "1"):
+                            self.args.color = True
+                        elif self.args.color.lower() in ("no", "n", "false", "0"):
+                            self.args.color = False
                     if self.args.website and not ScraperBase.is_available(self.args.website):
                         error = f"Invalid website: must be {ScraperBase.get_available_websites()}"
 
