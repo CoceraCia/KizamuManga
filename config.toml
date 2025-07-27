@@ -10,3 +10,6 @@ manga_website = "weeb_central"
 
 # Whether to allow multiple tasks (true/false). If left empty (""), the default value is 5.
 multiple_tasks = 5
+
+# Define if the image exported will have color
+color = true

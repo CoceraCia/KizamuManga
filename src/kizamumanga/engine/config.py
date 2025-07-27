@@ -29,7 +29,19 @@ class Config:
     @property
     def config(self) -> tomlkit.TOMLDocument:
         return self._config
+    
+    # ------------color-------------
+    @property
+    def color(self)-> bool:
+        return (self.config["color"]
+                if self._config["color"] != ""
+                else True)
 
+    @color.setter
+    def color(self, value):
+        self.config["color"] = value
+        self.save_toml()
+        
     # ------------cbz_path---------------
     @property
     def cbz_path(self) -> str:

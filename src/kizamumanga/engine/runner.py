@@ -119,6 +119,9 @@ class Runner:
                         f"dimensions changed to {self.args.width}x{self.args.height}"
                     )
             else:
+                if self.args.color is not None:
+                    self.config.color = self.args.color
+                    self.logger.info(f"Color changed to {self.args.website}")
                 if self.args.website:
                     self.config.manga_website = self.args.website
                     self.logger.info(f"Website changed to {self.args.website}")
@@ -185,18 +188,19 @@ class Runner:
 
     async def install(self, chapters: dict):
         """Method to install the selected manga chapters."""
-        if isinstance(self.args.chap, int):
-            if self.args.chap > len(chapters):
-                print(f"chapter doesn't exists. Chapters_available:{len(chapters)}")
-                self.logger.error(f"Chapter doesn't exists: {self.args.chap}")
-                raise ValueError("Chapter doesn't exists")
-        else:
-            if self.args.chap[1] > len(chapters):
-                print(f"Invalid range. Chapters_available:{len(chapters)}")
-                self.logger.error(
-                    f"Invalid chapter range: {self.args.chap} when searching for {len(chapters)}chapters"
-                    )
-                raise ValueError("Invalid chapter range")
+        if self.args.chap:
+            if isinstance(self.args.chap, int):
+                if self.args.chap > len(chapters):
+                    print(f"chapter doesn't exists. Chapters_available:{len(chapters)}")
+                    self.logger.error(f"Chapter doesn't exists: {self.args.chap}")
+                    raise ValueError("Chapter doesn't exists")
+            else:
+                if self.args.chap[1] > len(chapters):
+                    print(f"Invalid range. Chapters_available:{len(chapters)}")
+                    self.logger.error(
+                        f"Invalid chapter range: {self.args.chap} when searching for {len(chapters)}chapters"
+                        )
+                    raise ValueError("Invalid chapter range")
         manga_name = self.args.name
         download_all = True if self.args.chap is None else False
         manga_path = f"{self.config.cbz_path}/{manga_name}"
