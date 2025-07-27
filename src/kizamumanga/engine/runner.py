@@ -41,6 +41,7 @@ class Runner:
         self.sem: asyncio.Semaphore = None
         self.ls: LoadingSpinner = None
         self.base_pngs_path = None
+        self.manga_name = None
         
         if self.args.command != "config":
             self.__set_up()
@@ -157,11 +158,10 @@ class Runner:
 
         for i, (key, value) in enumerate(mangas_retrieved.items(), start=0):
             if i == n:
-                manga_name = key
+                self.manga_name = key
                 href = value
-                self.logger.info(f"Selected manga: {manga_name} with href: {href}")
+                self.logger.info(f"Selected manga: {self.manga_name} with href: {href}")
                 break
-
         # Retrieve all the chapters
         self.ls.start("Retrieving chapters")
         chapters = await self.ws.get_chapters_by_mangaurl(href)
@@ -201,7 +201,7 @@ class Runner:
                         f"Invalid chapter range: {self.args.chap} when searching for {len(chapters)}chapters"
                         )
                     raise ValueError("Invalid chapter range")
-        manga_name = self.args.name
+        manga_name = self.manga_name
         download_all = True if self.args.chap is None else False
         manga_path = f"{self.config.cbz_path}/{manga_name}"
         os.makedirs(manga_path, exist_ok=True)
