@@ -12,6 +12,6 @@ manga_website = "weeb_central"
 multiple_tasks = 5
 
 # Define if the image exported will have color
-color = true
+color = false
 
 cropping_mode = true

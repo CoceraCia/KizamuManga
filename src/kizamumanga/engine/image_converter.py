@@ -59,7 +59,6 @@ class ImageConverter():
         try:
             # In case that the image was not previously converted to grayscale, set it to True
             if img_is_grayscale:
-                print("is grayscale")
                 grey = cv2.imread(self.image_path, cv2.IMREAD_GRAYSCALE)
                 image = grey.copy()
             else:

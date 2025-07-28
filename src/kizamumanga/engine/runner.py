@@ -73,7 +73,8 @@ class Runner:
             if not os.path.exists(self.config.cbz_path):
                 print("Please set a valid folder for the cbz_path")
                 raise FileNotFoundError(f"Folder doesn't exists at: {self.config.cbz_path}")
-            self.base_pngs_path = tempfile.mkdtemp()
+            os.makedirs(os.path.expanduser("~\\.kizamu_temp"), exist_ok=True)
+            self.base_pngs_path = tempfile.mkdtemp(dir=os.path.expanduser("~\\.kizamu_temp"))
             self.logger.info(f"Temporary PNGs path created: {self.base_pngs_path}")
             if self.args.command == "config":
                 await self.modify_config()
