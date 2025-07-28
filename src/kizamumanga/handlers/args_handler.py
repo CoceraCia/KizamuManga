@@ -61,6 +61,13 @@ class ArgsHandler():
             help="Number of simultaneous downloads to run in parallel"
         )
         
+        conf_gen.add_argument(
+            "--cropping_mode",
+            help="Enable automatic margin cropping using content-based contour detection. "
+                "Removes uniform white or black borders while preserving important visual elements. "
+                "Supports optional grayscale conversion for improved accuracy."
+        )
+        
         # ---------------DIMENSIONS--------------
         conf_dimensions = conf_parser.add_parser("dimensions", help="set dimensions for the img")
         
@@ -128,6 +135,17 @@ class ArgsHandler():
                             self.args.color = True
                         elif self.args.color.lower() in ("no", "n", "false", "0"):
                             self.args.color = False
+                        else:
+                            error = "Invalid syntaxis, must be a bool"
+                            
+                    if self.args.cropping_mode:
+                        if self.args.cropping_mode.lower() in ("yes", "y", "true", "1"):
+                            self.args.cropping_mode = True
+                        elif self.args.cropping_mode.lower() in ("no", "n", "false", "0"):
+                            self.args.cropping_mode = False
+                        else:
+                            error = "Invalid syntaxis, must be a bool"
+                        
                     if self.args.website and not ScraperBase.is_available(self.args.website):
                         error = f"Invalid website: must be {ScraperBase.get_available_websites()}"
 

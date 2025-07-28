@@ -20,37 +20,24 @@ class Logger:
         
         self._set_up_files()
         self._set_up_handlers(name)
-
+    
 
     def _set_up_handlers(self, name: str ):
         """Set up logging handlers for different log files."""
-        formater = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        errors_handler = RotatingFileHandler(f"{self.path_logs}/errors.log", maxBytes=5_000_000, backupCount=3)
-        errors_handler.setLevel(logging.ERROR)
-        errors_handler.setFormatter(formater)
-        self.logger.addHandler(errors_handler)
+        path_handler = os.path.normpath(f"{self.path_logs}/errors.log")
+        self.__add_handler(path_handler, logging.ERROR)
 
         if "runner" in name:
-            app_handler = RotatingFileHandler(f"{self.path_logs}/app.log", maxBytes=5_000_000, backupCount=3)
-            app_handler.setLevel(logging.DEBUG)
-            app_handler.setFormatter(formater)
-            self.logger.addHandler(app_handler)
+            path_handler = os.path.normpath(f"{self.path_logs}/app.log")
+            self.__add_handler(path_handler, logging.DEBUG)
         elif "downloader" in name:
-            downloader_handler = RotatingFileHandler(f"{self.path_logs}/downloader.log", maxBytes=5_000_000, backupCount=3)
-            downloader_handler.setLevel(logging.INFO)
-            downloader_handler.setFormatter(formater)
-            self.logger.addHandler(downloader_handler)
+            path_handler = os.path.normpath(f"{self.path_logs}/downloader.log")
+            self.__add_handler(path_handler, logging.INFO)
         elif "scraping" in name:
-            scraping_handler = RotatingFileHandler(f"{self.path_logs}/scraping.log", maxBytes=5_000_000, backupCount=3)
-            scraping_handler.setLevel(logging.INFO)
-            scraping_handler.setFormatter(formater)
-            self.logger.addHandler(scraping_handler)
+            path_handler = os.path.normpath(f"{self.path_logs}/scraping.log")
+            self.__add_handler(path_handler, logging.INFO)
         if self.console:
-            # Add console handler for debugging
-            console_handler = logging.StreamHandler()
-            console_handler.setLevel(logging.DEBUG)
-            console_handler.setFormatter(formater)
-            self.logger.addHandler(console_handler)
+            self.__add_handler(None,logging.DEBUG, console=True)
 
     def info(self, message: str):
         """Log an info message."""
@@ -100,3 +87,13 @@ class Logger:
         if not os.path.exists(scraping_log):
             with open(scraping_log, "w", encoding="utf-8"):
                 pass
+
+    def __add_handler(self, path_handler, level, console = False):
+        formater = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        if console:
+            handler = logging.StreamHandler()
+        else:
+            handler = RotatingFileHandler(path_handler, maxBytes=5_000_000, backupCount=3, delay=True)
+        handler.setLevel(level)
+        handler.setFormatter(formater)
+        self.logger.addHandler(handler)

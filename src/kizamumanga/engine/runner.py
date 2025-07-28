@@ -70,6 +70,9 @@ class Runner:
     async def run(self):
         """Main method to run the manga downloading process."""
         try:
+            if not os.path.exists(self.config.cbz_path):
+                print("Please set a valid folder for the cbz_path")
+                raise FileNotFoundError(f"Folder doesn't exists at: {self.config.cbz_path}")
             self.base_pngs_path = tempfile.mkdtemp()
             self.logger.info(f"Temporary PNGs path created: {self.base_pngs_path}")
             if self.args.command == "config":
@@ -100,6 +103,8 @@ class Runner:
         except asyncio.exceptions.CancelledError as e:
             self.logger.exception(f"CancelledError during run(): {e}")
             raise KeyboardInterrupt from e
+        except RuntimeError as e:
+            raise KeyboardInterrupt from e
         except ValueError as e:
             self.logger.exception(f"ValueError during run(): {e}")
             raise KeyboardInterrupt from e
@@ -120,7 +125,10 @@ class Runner:
                         f"dimensions changed to {self.args.width}x{self.args.height}"
                     )
             else:
-                if self.args.color is not None:
+                if self.args.cropping_mode is not None: #it's bool
+                    self.config.cropping_mode = self.args.cropping_mode
+                    self.logger.info(f"Cropping_mode changed to {self.args.cropping_mode}")
+                if self.args.color is not None: #it's bool
                     self.config.color = self.args.color
                     self.logger.info(f"Color changed to {self.args.website}")
                 if self.args.website:
@@ -203,14 +211,14 @@ class Runner:
                     raise ValueError("Invalid chapter range")
         manga_name = self.manga_name
         download_all = True if self.args.chap is None else False
-        manga_path = f"{self.config.cbz_path}/{manga_name}"
+        manga_path = os.path.normpath(f"{self.config.cbz_path}/{manga_name}")
         os.makedirs(manga_path, exist_ok=True)
         tasks = []
 
         if download_all is True:
             self.logger.info("Downloading all chapters")
             for chap, href in chapters.items():
-                pngs_path = f"{self.base_pngs_path}/{manga_name}/{chap}"
+                pngs_path = os.path.normpath(f"{self.base_pngs_path}/{manga_name}/{chap}")
                 tasks.append(
                     self.__download_chap(
                         pngs_path=pngs_path,
