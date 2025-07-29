@@ -30,6 +30,17 @@ class Config:
     def config(self) -> tomlkit.TOMLDocument:
         return self._config
     
+    # ----------CROPPING_MODE-----------
+    @property
+    def cropping_mode(self)-> bool:
+        return (self.config["cropping_mode"]
+                if self._config["cropping_mode"] != ""
+                else True)
+    @cropping_mode.setter
+    def cropping_mode(self, value)-> bool:
+        self.config["cropping_mode"] = value
+        self.save_toml()
+    
     # ------------color-------------
     @property
     def color(self)-> bool:

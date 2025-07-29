@@ -33,6 +33,7 @@ class Runner:
         # retrieve config.toml atr
         self.config: Config = Config()
         self.logger.info(f"Config loaded: {self.config.config}")
+
         # retrieve the selected scrapper
         self.ws: ScraperInterface = None
 
@@ -40,7 +41,7 @@ class Runner:
         self.mdownloader: MangaDownloader = None
         self.sem: asyncio.Semaphore = None
         self.ls: LoadingSpinner = None
-        self.base_pngs_path = None
+        self.temp_pngs_path = None
         self.manga_name = None
         
         if self.args.command != "config":
@@ -70,8 +71,12 @@ class Runner:
     async def run(self):
         """Main method to run the manga downloading process."""
         try:
-            self.base_pngs_path = tempfile.mkdtemp()
-            self.logger.info(f"Temporary PNGs path created: {self.base_pngs_path}")
+            if not os.path.exists(self.config.cbz_path):
+                print("Please set a valid folder for the cbz_path")
+                raise FileNotFoundError(f"Folder doesn't exists at: {self.config.cbz_path}")
+            self.temp_pngs_path = os.path.join(self.config.cbz_path, ".kizamu_temp")
+            os.makedirs(self.temp_pngs_path, exist_ok=True)
+            self.logger.info(f"Temporary PNGs path created: {self.temp_pngs_path}")
             if self.args.command == "config":
                 await self.modify_config()
                 return
@@ -100,6 +105,8 @@ class Runner:
         except asyncio.exceptions.CancelledError as e:
             self.logger.exception(f"CancelledError during run(): {e}")
             raise KeyboardInterrupt from e
+        except RuntimeError as e:
+            raise KeyboardInterrupt from e
         except ValueError as e:
             self.logger.exception(f"ValueError during run(): {e}")
             raise KeyboardInterrupt from e
@@ -120,7 +127,10 @@ class Runner:
                         f"dimensions changed to {self.args.width}x{self.args.height}"
                     )
             else:
-                if self.args.color is not None:
+                if self.args.cropping_mode is not None: #it's bool
+                    self.config.cropping_mode = self.args.cropping_mode
+                    self.logger.info(f"Cropping_mode changed to {self.args.cropping_mode}")
+                if self.args.color is not None: #it's bool
                     self.config.color = self.args.color
                     self.logger.info(f"Color changed to {self.args.website}")
                 if self.args.website:
@@ -203,14 +213,14 @@ class Runner:
                     raise ValueError("Invalid chapter range")
         manga_name = self.manga_name
         download_all = True if self.args.chap is None else False
-        manga_path = f"{self.config.cbz_path}/{manga_name}"
+        manga_path = os.path.normpath(f"{self.config.cbz_path}/{manga_name}")
         os.makedirs(manga_path, exist_ok=True)
         tasks = []
 
         if download_all is True:
             self.logger.info("Downloading all chapters")
             for chap, href in chapters.items():
-                pngs_path = f"{self.base_pngs_path}/{manga_name}/{chap}"
+                pngs_path = os.path.normpath(f"{self.temp_pngs_path}/{manga_name}/{chap}")
                 tasks.append(
                     self.__download_chap(
                         pngs_path=pngs_path,
@@ -225,7 +235,7 @@ class Runner:
             for i, (chap, href) in enumerate(chapters.items(), start=1):
                 if isinstance(self.args.chap, list):
                     if i >= int(self.args.chap[0]) and i <= int(self.args.chap[1]):
-                        pngs_path = f"{self.base_pngs_path}/{manga_name}/{chap}"
+                        pngs_path = f"{self.temp_pngs_path}/{manga_name}/{chap}"
                         tasks.append(
                             self.__download_chap(
                                 pngs_path=pngs_path,
@@ -237,7 +247,7 @@ class Runner:
                         )
                 else:
                     if i == self.args.chap:
-                        pngs_path = f"{self.base_pngs_path}/{manga_name}/{chap}"
+                        pngs_path = f"{self.temp_pngs_path}/{manga_name}/{chap}"
                         tasks.append(
                             self.__download_chap(
                                 pngs_path=pngs_path,
@@ -259,9 +269,9 @@ class Runner:
                 if self.ls.state is not None:
                     self.ls.end()
                     self.logger.info("LoadingSpinner ended")
-                if os.path.exists(self.base_pngs_path):
-                    shutil.rmtree(self.base_pngs_path)
-                    self.logger.info(f"Temporary PNGs path {self.base_pngs_path} removed")
+                if os.path.exists(self.temp_pngs_path):
+                    shutil.rmtree(self.temp_pngs_path)
+                    self.logger.info(f"Temporary PNGs path {self.temp_pngs_path} removed")
                 await asyncio.shield(self.ws.close())
                 self.logger.info("Scraper closed")
 

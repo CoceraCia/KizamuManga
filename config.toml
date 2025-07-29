@@ -13,3 +13,5 @@ multiple_tasks = 5
 
 # Define if the image exported will have color
 color = false
+
+cropping_mode = true
