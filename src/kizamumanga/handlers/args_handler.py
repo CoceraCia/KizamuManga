@@ -1,4 +1,5 @@
 import argparse
+import os
 import re
 from utils import Logger
 from scraping import ScraperBase
@@ -130,6 +131,9 @@ class ArgsHandler():
                         else:
                             error = "You need to especify the width and height"
                 else:
+                    if self.args.cbz_path:
+                        if not os.path.exists(self.args.cbz_path):
+                            error = "Folder doesn't exists"
                     if self.args.color:
                         if self.args.color.lower() in ("yes", "y", "true", "1"):
                             self.args.color = True
