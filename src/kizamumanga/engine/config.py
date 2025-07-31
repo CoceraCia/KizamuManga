@@ -1,116 +1,105 @@
 """Config module for loading and saving KizamuManga settings."""
-
-import os
 import tomlkit
-
-PROJECT_ROOT = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "..")
-)
-CONFIG_PATH = os.path.join(PROJECT_ROOT, "config.toml")
-
+from .paths import CONFIG_PATH, CBZ_PATH
 
 class Config:
-    """Configuration manager for KizamuManga engine."""
+    """Manages loading, updating, and saving project settings."""
 
     def __init__(self):
-        """Initialize config by loading from YAML file."""
+        """Load configuration from TOML file."""
         self._config = None
         self.load_toml()
 
     def load_toml(self):
+        """Parse the TOML config file and load it into memory."""
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
             self._config = tomlkit.parse(f.read())
 
     def save_toml(self):
+        """Write the current config back to the TOML file."""
         with open(CONFIG_PATH, "w", encoding="utf-8") as f:
             f.write(tomlkit.dumps(self._config))
 
-    # -----------PROPERTIES------------
     @property
     def config(self) -> tomlkit.TOMLDocument:
+        """Return the full config object."""
         return self._config
-    
-    # ----------CROPPING_MODE-----------
+
     @property
-    def cropping_mode(self)-> bool:
-        return (self.config["cropping_mode"]
-                if self._config["cropping_mode"] != ""
-                else True)
+    def cropping_mode(self) -> bool:
+        """Get cropping mode; default is True if unset."""
+        return self.config["cropping_mode"] if self._config["cropping_mode"] != "" else True
+
     @cropping_mode.setter
-    def cropping_mode(self, value)-> bool:
+    def cropping_mode(self, value) -> bool:
+        """Set and save cropping mode."""
         self.config["cropping_mode"] = value
         self.save_toml()
-    
-    # ------------color-------------
+
     @property
-    def color(self)-> bool:
-        return (self.config["color"]
-                if self._config["color"] != ""
-                else True)
+    def color(self) -> bool:
+        """Get color mode; default is True if unset."""
+        return self.config["color"] if self._config["color"] != "" else True
 
     @color.setter
     def color(self, value):
+        """Set and save color mode."""
         self.config["color"] = value
         self.save_toml()
-        
-    # ------------cbz_path---------------
+
     @property
     def cbz_path(self) -> str:
-        return (
-            self._config["cbz_path"]
-            if self._config["cbz_path"] != ""
-            else os.path.join(PROJECT_ROOT, "manga_downloads")
-        )
+        """Get path for saving CBZ files; default to 'manga_downloads'."""
+        return (self._config["cbz_path"] 
+                if self._config["cbz_path"] != ""
+                else CBZ_PATH)
 
     @cbz_path.setter
     def cbz_path(self, value):
+        """Set and save CBZ path."""
         self._config["cbz_path"] = value
         self.save_toml()
 
-    # ------------manga_website-----------
     @property
-    def manga_website(self) -> str:
-        return (
-            self._config["manga_website"]
-            if self._config["manga_website"] != ""
-            else "weeb_central"
-        )
+    def website(self) -> str:
+        """Get selected manga website; default is 'weeb_central'."""
+        return self._config["website"] if self._config["website"] != "" else "weeb_central"
 
-    @manga_website.setter
-    def manga_website(self, value):
-        self._config["manga_website"] = value
+    @website.setter
+    def website(self, value):
+        """Set and save selected manga website."""
+        self._config["website"] = value
         self.save_toml()
 
-    # -----------multiple_tasks-----------
     @property
     def multiple_tasks(self) -> int:
-        return (
-            int(self._config["multiple_tasks"])
-            if self._config["multiple_tasks"] != ""
-            else 5
-        )
+        """Get max number of parallel tasks; default is 5."""
+        return int(self._config["multiple_tasks"]) if self._config["multiple_tasks"] != "" else 5
 
     @multiple_tasks.setter
     def multiple_tasks(self, value):
+        """Set and save number of parallel tasks."""
         self._config["multiple_tasks"] = value
         self.save_toml()
 
-    # -------------width-------------
     @property
     def width(self) -> int:
+        """Get image width; None if unset."""
         return int(self._config["width"]) if self._config["width"] != "" else None
 
     @width.setter
     def width(self, value):
+        """Set and save image width."""
         self._config["width"] = value
         self.save_toml()
 
-    # ----------height----------------
     @property
     def height(self):
+        """Get image height; None if unset."""
         return int(self._config["height"]) if self._config["height"] != "" else None
 
     @height.setter
     def height(self, value):
+        """Set and save image height."""
         self._config["height"] = value
         self.save_toml()
