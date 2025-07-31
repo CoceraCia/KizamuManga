@@ -1,5 +1,4 @@
 
-# KizamuManga
 
 **KizamuManga** is a CLI-based manga downloader built with Python.
 
@@ -8,6 +7,7 @@ It allows you to search and download manga chapters from supported websites and 
 ⚠️  **Disclaimer** : This project is for educational purposes only. I’m currently learning Python and working on improving my skills.
 
 Feedback, suggestions, or even constructive criticism are very welcome!
+<p align="center"><img width="300" alt="KizamuManga" src="https://github.com/user-attachments/assets/153c6620-7461-4ffe-a399-69aa9f03b885" /></p>
 
 ---
 
