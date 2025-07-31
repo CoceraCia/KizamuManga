@@ -1,29 +1,29 @@
 """engine/logger.py
 KizamuManga - Logger module for handling logging in the application."""
+
 import logging
 import os
-
 from logging.handlers import RotatingFileHandler
 
+
 class Logger:
-    """Logger class to handle logging for the application."""
+    """Handles application logging with support for file and console output."""
+
     def __init__(self, name: str, console: bool = False):
+        """Initialize logger and prepare log files and handlers."""
         project_root = os.path.abspath(os.path.join(
             os.path.dirname(__file__), "..", "..", ".."))
-        
+
         self.path_logs = os.path.join(project_root, "logs")
-        
         self.console = console
-        
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.DEBUG)
-        
+
         self._set_up_files()
         self._set_up_handlers(name)
-    
 
-    def _set_up_handlers(self, name: str ):
-        """Set up logging handlers for different log files."""
+    def _set_up_handlers(self, name: str):
+        """Assign log handlers based on logger type (runner, downloader, etc.)."""
         path_handler = os.path.normpath(f"{self.path_logs}/errors.log")
         self.__add_handler(path_handler, logging.ERROR)
 
@@ -37,37 +37,36 @@ class Logger:
             path_handler = os.path.normpath(f"{self.path_logs}/scraping.log")
             self.__add_handler(path_handler, logging.INFO)
         if self.console:
-            self.__add_handler(None,logging.DEBUG, console=True)
+            self.__add_handler(None, logging.DEBUG, console=True)
 
     def info(self, message: str):
-        """Log an info message."""
+        """Log informational messages."""
         self.logger.info(message)
 
     def debug(self, message: str):
-        """Log a debug message."""
+        """Log debug-level messages."""
         self.logger.debug(message)
 
     def warning(self, message: str):
-        """Log a warning message."""
+        """Log warnings."""
         self.logger.warning(message)
 
     def error(self, message: str):
-        """Log an error message."""
+        """Log errors."""
         self.logger.error(message)
 
-    def exception(self, message:str):
+    def exception(self, message: str):
+        """Log exceptions with traceback."""
         self.logger.error(message, exc_info=True)
 
     def critical(self, message: str):
-        """Log a critical message."""
+        """Log critical-level errors."""
         self.logger.critical(message)
 
-
     def _set_up_files(self):
-        """Create log directory and files if they do not exist."""
+        """Ensure log directory and default log files exist."""
         os.makedirs(self.path_logs, exist_ok=True)
 
-        # Create log files if they do not exist
         app_log = f"{self.path_logs}/app.log"
         if not os.path.exists(app_log):
             with open(app_log, "w", encoding="utf-8"):
@@ -88,7 +87,8 @@ class Logger:
             with open(scraping_log, "w", encoding="utf-8"):
                 pass
 
-    def __add_handler(self, path_handler, level, console = False):
+    def __add_handler(self, path_handler, level, console=False):
+        """Add a logging handler for file or console output."""
         formater = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         if console:
             handler = logging.StreamHandler()

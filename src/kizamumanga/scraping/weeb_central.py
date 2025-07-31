@@ -1,7 +1,8 @@
 from bs4 import BeautifulSoup
 
-from utils.logger import Logger
 from playwright.async_api import Error, TimeoutError as PlaywrightTimeoutError
+
+from utils.logger import Logger
 from utils.general_tools import extract_num
 from .interface import ScraperInterface
 from .base import ScraperBase, MangaError
@@ -13,35 +14,16 @@ HEADERS = {
 
 
 class WeebCentral(ScraperBase, ScraperInterface):
-    """
-    Class to interact with the WeebCentral website to search for manga,
-    retrieve chapters, and download them.
-    Uses Playwright for browser automation and BeautifulSoup for HTML parsing.
-    """
+    """Scraper for WeebCentral site to fetch manga info and images."""
 
     def __init__(self):
-        """
-        Initialize the WeebCentral instance with a headless browser.
-
-        Args:
-            verify (bool): Whether to verify SSL certificates when downloading images.
-                           Default is True.
-        """
+        """Initialize WeebCentral scraper with logging."""
         super().__init__()
         self.logger = Logger("scraping.weeb_central")
 
 
     async def get_mangas_by_title(self, title: str) -> dict:
-        """
-        Search for manga by title on WeebCentral.
-
-        Args:
-            title (str): The title of the manga to search.
-
-        Returns:
-            dict or None: A dictionary with manga names as keys and partial URLs as values.
-                          Returns None if no results are found.
-        """
+        """Search manga by title and return matches as {name: URL}."""
         title = title.replace(" ", "+")
         url = f"{BASE_URL}/search?text={title}&sort=Best+Match&order=Descending&official=Any&anime=Any&adult=Any&display_mode=Full+Display"
         async with await self.context.new_page() as page:
@@ -64,15 +46,7 @@ class WeebCentral(ScraperBase, ScraperInterface):
         return nl
 
     async def get_chapters_by_mangaurl(self, manga_url) -> dict:
-        """
-        Retrieve available chapters for a given manga URL.
-
-        Args:
-            manga_url (str): The full URL of the manga.
-
-        Returns:
-            dict: A sorted dictionary with chapter names as keys and chapter URLs as values.
-        """
+        """Return chapters for a manga as {chapter_name: URL}, sorted by chapter number."""
         async with await self.context.new_page() as page:
             await page.goto(manga_url)
             element = await page.query_selector("#chapter-list > button")
@@ -104,6 +78,7 @@ class WeebCentral(ScraperBase, ScraperInterface):
                             
 
     async def obtain_chapter_content(self, manga_url) -> dict:
+        """Get image URLs for a chapter as {image_name: src}."""
         while True:
             try:
                 async with await self.context.new_page() as page:

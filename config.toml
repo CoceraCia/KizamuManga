@@ -1,17 +1,39 @@
-# Path to the CBZ file (manga archive). If left empty (""), the default path will be: <program_root>/manga_downloads
-cbz_path = ""
+# ===============================
+# 📁 Output Paths
+# ===============================
 
-# Viewer dimensions. Set to null to use the original size of the images downloaded from the website.
-height = 1680
-width = 1264
+# Path to the directory where CBZ files will be saved.
+# If empty (""), defaults to: <project_root>/manga_downloads
+cbz_path = "C:\\Users\\MiguelCocera\\progra\\manga\\prueba"
 
-# Manga source website
-manga_website = "weeb_central"
 
-# Whether to allow multiple tasks (true/false). If left empty (""), the default value is 5.
+# ===============================
+# ⚙️  Engine Settings
+# ===============================
+
+# Website to scrape manga from.
+# Example: "weeb_central"
+website = "weeb_central"
+
+# Number of simultaneous tasks the engine can run.
+# If empty (""), defaults to 5.
 multiple_tasks = 5
 
-# Define if the image exported will have color
+
+# ===============================
+# 🎨 Image Export Settings
+# ===============================
+
+# Whether the exported images will be in color.
+# true = color | false = grayscale
+# If empty (""), defaults to true.
 color = false
 
+# Enable or disable automatic image cropping.
+# If empty (""), defaults to true.
 cropping_mode = true
+
+# Viewer resolution settings.
+# Set to null to use the original image dimensions.
+height = 1680
+width = 1264
