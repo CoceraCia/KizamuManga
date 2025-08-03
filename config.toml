@@ -4,7 +4,7 @@
 
 # Path to the directory where CBZ files will be saved.
 # If empty (""), defaults to: <project_root>/manga_downloads
-cbz_path = "C:\\Users\\MiguelCocera\\progra\\manga\\prueba"
+cbz_path = ""
 
 
 # ===============================
@@ -27,7 +27,7 @@ multiple_tasks = 5
 # Whether the exported images will be in color.
 # true = color | false = grayscale
 # If empty (""), defaults to true.
-color = false
+color = true
 
 # Enable or disable automatic image cropping.
 # If empty (""), defaults to true.

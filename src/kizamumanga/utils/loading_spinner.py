@@ -30,8 +30,11 @@ class LoadingSpinner:
             self.progress.stop()
         self.thread.join()
 
-    def update(self):
-        self.progress.update(self.task, advance=1)
+    def update(self, description:str = None):
+        if description:
+            self.progress.update(self.task, advance=1, description = description)
+        else:
+            self.progress.update(self.task, advance=1)
     
     def __loading_message(self, message: str):
         """Internal loop to animate spinner while active."""

@@ -165,9 +165,9 @@ class Runner:
         self.logger.info(f"Mangas retrieved: {len(mangas_retrieved)}")
         self.ls.end()
 
-        self.console.print("[#9f25cc]AVAILABLE MANGAS:[/#9f25cc]")
+        self.console.print("[bold white]AVAILABLE MANGAS:[/bold white]")
         for i, key in enumerate(mangas_retrieved.keys(), start=0):
-            self.console.print(f"[#541c70]{i}[/#541c70] - {key}")
+            self.console.print(f"[white]{i}[/white] - {key}")
 
         try:
             # User selects the manga
@@ -192,7 +192,7 @@ class Runner:
 
         if self.args.command == "search":
             # Display chapter count
-            self.console.print(f"[#9f25cc]AVAILABLE CHAPTERS:[/#9f25cc] ", end="")
+            self.console.print(f"[bold white]AVAILABLE CHAPTERS:[/bold white] ", end="")
             print(len(chapters.keys()))
 
             # Ask user to view all chapters
@@ -206,7 +206,7 @@ class Runner:
             if view_all_chapters:
                 self.logger.info("User chose to view all chapters")
                 for i, chap in enumerate(chapters.keys(), start=1):
-                    self.console.print(f"[#541c70]{i}[/#541c70] - ", end="")
+                    self.console.print(f"[bold white]{i}[/bold white] - ", end="")
                     print(chap)
 
         return chapters
@@ -347,6 +347,6 @@ class Runner:
                 self.logger.info(f"Exported chapter {chap} to CBZ format")
                 shutil.rmtree(pngs_path)
                 self.logger.info(f"Temporary PNGs path {pngs_path} removed")
-                self.ls.update()
+                self.ls.update(chap)
         else:
             self.logger.info(f"Chapter {chap} already exists in CBZ format")
