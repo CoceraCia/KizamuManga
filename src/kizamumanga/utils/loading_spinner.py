@@ -9,6 +9,8 @@ class LoadingSpinner:
 
     def __init__(self):
         """Initialize state and thread."""
+        self.index = 0
+        self.total = None
         self.progress: Progress = None
         self.task = None
         self.state : bool = None
@@ -31,8 +33,9 @@ class LoadingSpinner:
         self.thread.join()
 
     def update(self, description:str = None):
+        self.index += 1
         if description:
-            self.progress.update(self.task, advance=1, description = description)
+            self.progress.update(self.task, advance=1, description = f"{self.index}/{self.total}")
         else:
             self.progress.update(self.task, advance=1)
     
@@ -43,6 +46,7 @@ class LoadingSpinner:
             while self.state:
                 time.sleep(0.1)
     def __downloading_message(self, message:str, total : int):
+        self.total = total
         self.progress =  Progress(
             TextColumn("[bold blue]{task.description}"),
             BarColumn(bar_width=40),
@@ -52,5 +56,5 @@ class LoadingSpinner:
         console = Console()
         console.print(f"[bold]{message}[/bold]", end="")
         print("...")
-        self.task = self.progress.add_task("",total = total)
+        self.task = self.progress.add_task(f"0/{self.total}",total = total)
         self.progress.start()

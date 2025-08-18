@@ -2,6 +2,7 @@
 
 import asyncio
 import os
+from io import BytesIO
 import ssl
 
 import aiohttp
@@ -50,11 +51,13 @@ class MangaDownloader:
                                 timeout=aiohttp.ClientTimeout(total=5),
                             ) as r:
                                 content = await r.read()
+                                buffer = BytesIO(content)
+                                img = self.__process_image(buffer)
                                 img_path = os.path.normpath(f"{path}/{img_name}.png")
                                 with open(img_path, "wb") as f:
-                                    f.write(content)
+                                    f.write(img.getvalue())
                                     self._logger.info(f"Downloaded: {img_path}")
-                                self.__process_image(img_path)
+                                # self.__process_image(img_path)
                                 break
                         except asyncio.TimeoutError:
                             self._logger.error(f"Timeout while downloading {img_name}")
@@ -71,25 +74,27 @@ class MangaDownloader:
             self._logger.error(f"Client error during download: {e}")
             return False
 
-    def __process_image(self, img_path):
+    def __process_image(self, image_buffer):
         """Apply grayscale, cropping, and resizing to a downloaded image."""
         width = self.config.width
         height = self.config.height
-        imgc = ImageConverter(img_path)
+        imgc = ImageConverter(image_buffer)
         try:
             if not self.config.color:
                 imgc.grayscale()
-                self._logger.info(f"Grayscale applied: {img_path}")
+                self._logger.info(f"Grayscale applied: {image_buffer}")
 
             if self.config.cropping_mode:
                 is_grayscale = not self.config.color
                 imgc.crop_countors(img_is_grayscale=is_grayscale)
-                self._logger.info(f"Cropped: {img_path}")
+                self._logger.info(f"Cropped: {image_buffer}")
 
             if width is not None and height is not None:
                 imgc.resize(width=width, height=height)
-                self._logger.info(f"Resized: {img_path}")
+                self._logger.info(f"Resized: {image_buffer}")
+
+            return imgc.retrieve_buffered_img()
 
         except Exception as e:
-            self._logger.error(f"Processing failed for {img_path}: {e}")
+            self._logger.error(f"Processing failed for {image_buffer}: {e}")
             raise

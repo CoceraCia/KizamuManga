@@ -75,7 +75,8 @@ class Runner:
             # Check if cbz_path exists
             if not os.path.exists(CBZ_PATH):
                 print("Please set a valid folder for the cbz_path")
-                raise FileNotFoundError(f"Folder doesn't exists at: {CBZ_PATH}")
+                raise FileNotFoundError(
+                    f"Folder doesn't exists at: {CBZ_PATH}")
 
             # Create tempPath
             os.makedirs(TEMP_PATH, exist_ok=True)
@@ -155,7 +156,8 @@ class Runner:
             elif self.args.conf_comm == "paths":
                 if self.args.cbz_path:
                     self.config.cbz_path = self.args.cbz_path
-                    self.logger.info(f"CBZ path changed to {self.args.cbz_path}")
+                    self.logger.info(
+                        f"CBZ path changed to {self.args.cbz_path}")
 
     async def search(self) -> dict:
         """Method to search for mangas and retrieve chapters."""
@@ -182,7 +184,8 @@ class Runner:
             if i == n:
                 self.manga_name = key
                 href = value
-                self.logger.info(f"Selected manga: {self.manga_name} with href: {href}")
+                self.logger.info(
+                    f"Selected manga: {self.manga_name} with href: {href}")
                 break
         # Retrieve all the chapters
         self.ls.start("Retrieving chapters")
@@ -192,7 +195,8 @@ class Runner:
 
         if self.args.command == "search":
             # Display chapter count
-            self.console.print(f"[bold white]AVAILABLE CHAPTERS:[/bold white] ", end="")
+            self.console.print(
+                f"[bold white]AVAILABLE CHAPTERS:[/bold white] ", end="")
             print(len(chapters.keys()))
 
             # Ask user to view all chapters
@@ -206,7 +210,8 @@ class Runner:
             if view_all_chapters:
                 self.logger.info("User chose to view all chapters")
                 for i, chap in enumerate(chapters.keys(), start=1):
-                    self.console.print(f"[bold white]{i}[/bold white] - ", end="")
+                    self.console.print(
+                        f"[bold white]{i}[/bold white] - ", end="")
                     print(chap)
 
         return chapters
@@ -223,11 +228,13 @@ class Runner:
                     print(f"Chapters_available -> {len(chapters)}")
 
                     # Logg and raise error
-                    self.logger.error(f"Chapter doesn't exists -> {self.args.chap}")
+                    self.logger.error(
+                        f"Chapter doesn't exists -> {self.args.chap}")
                     raise ValueError("Chapter doesn't exists")
             else:
                 if self.args.chap[1] > len(chapters):
-                    self.console.print(f"[bold red]Invalid range. [/bold red]", end="")
+                    self.console.print(
+                        f"[bold red]Invalid range. [/bold red]", end="")
                     print(f"Chapters_available -> {len(chapters)}")
 
                     # Logg and raise error
@@ -236,7 +243,12 @@ class Runner:
                     )
                     raise ValueError("Invalid chapter range")
 
-        manga_name = self.manga_name
+        manga_name: str = self.manga_name
+        invalid_chars = [
+            "<", ">", ":", '"', "/", "\\", "|", "?", "*"]
+        for char in invalid_chars:
+            manga_name = manga_name.replace(char, "")
+
         download_all = True if self.args.chap is None else False
         tasks = []
 
@@ -247,7 +259,8 @@ class Runner:
             self.ls.start("Downloading all chapters", len(chapters))
             self.logger.info("Downloading all chapters")
             for chap, href in chapters.items():
-                pngs_path = os.path.normpath(f"{TEMP_PATH}/{manga_name}/{chap}")
+                pngs_path = os.path.normpath(
+                    f"{TEMP_PATH}/{manga_name}/{chap}")
                 tasks.append(
                     self.__download_chap(
                         pngs_path=pngs_path,
@@ -259,7 +272,8 @@ class Runner:
                 )
         else:
             self.ls.start("Downloading chapters", len(chapters))
-            self.logger.info(f"Downloading chapters in range: {self.args.chap}")
+            self.logger.info(
+                f"Downloading chapters in range: {self.args.chap}")
             for i, (chap, href) in enumerate(chapters.items(), start=1):
                 # If it's a range of chaps
                 if isinstance(self.args.chap, list):
@@ -314,7 +328,8 @@ class Runner:
             self.logger.info("Scraper closed")
 
             # --------------------Closing all tasks---------------------
-            tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+            tasks = [t for t in asyncio.all_tasks(
+            ) if t is not asyncio.current_task()]
 
             for task in tasks:
                 self.logger.info(f"Cancelling task: {task.get_name()}")
@@ -323,7 +338,8 @@ class Runner:
 
             for i, result in enumerate(results):
                 if isinstance(result, Exception):
-                    self.logger.error(f"Task {i} finished with exception: {result}")
+                    self.logger.error(
+                        f"Task {i} finished with exception: {result}")
 
         except asyncio.exceptions.CancelledError as e:
             self.logger.exception(f"CancelledError during close(): {e}")
@@ -337,7 +353,8 @@ class Runner:
                 # self.ls.start("Downloading")
                 os.makedirs(pngs_path, exist_ok=True)
                 if await asyncio.shield(
-                    self.mdownloader.download_chap(path=pngs_path, chapter_url=chap_url)
+                    self.mdownloader.download_chap(
+                        path=pngs_path, chapter_url=chap_url)
                 ):
                     self.logger.info(f"Chapter {chap} downloaded successfully")
                 else:
