@@ -12,8 +12,8 @@ cbz_path = ""
 # ===============================
 
 # Website to scrape manga from.
-# Example: "weeb_central"
-website = "weeb_central"
+# Example: "weeb_central", "inmanga"
+website = "inmanga"
 
 # Number of simultaneous tasks the engine can run.
 # If empty (""), defaults to 5.
@@ -27,7 +27,7 @@ multiple_tasks = 5
 # Whether the exported images will be in color.
 # true = color | false = grayscale
 # If empty (""), defaults to true.
-color = false
+color = true
 
 # Enable or disable automatic image cropping.
 # If empty (""), defaults to true.
