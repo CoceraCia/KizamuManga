@@ -244,8 +244,8 @@ class Runner:
                         f"Invalid chapter range: {self.args.chap} when searching for {len(chapters)} chapters"
                     )
                     raise ValueError("Invalid chapter range")
-
-        manga_name: str = self.__replace_invalid_chars(self.manga_name)
+                
+        manga_name = await self.__replace_invalid_chars(self.manga_name)
 
         download_all = True if self.args.chap is None else False
         tasks = []
@@ -257,7 +257,7 @@ class Runner:
             self.ls.start("Downloading all chapters", len(chapters))
             self.logger.info("Downloading all chapters")
             for chap, href in chapters.items():
-                chap = self.__replace_invalid_chars(chap)
+                chap = await self.__replace_invalid_chars(chap)
                 pngs_path = os.path.normpath(
                     f"{TEMP_PATH}/{manga_name}/{chap}")
                 tasks.append(
@@ -367,9 +367,11 @@ class Runner:
         else:
             self.logger.info(f"Chapter {chap} already exists in CBZ format")
 
-    async def __replace_invalid_chars(self, value:str)->str:
+    async def __replace_invalid_chars(self, vtoreplace:str)->str:
         invalid_chars = [
             "<", ">", ":", '"', "/", "\\", "|", "?", "*"]
+        print(vtoreplace)
         for char in invalid_chars:
-            value = value.replace(char, "")
-        return value
+            vtoreplace = vtoreplace.replace(char, "")
+            print(vtoreplace)
+        return vtoreplace

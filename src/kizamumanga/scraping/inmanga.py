@@ -126,7 +126,8 @@ class InManga(ScraperBase, ScraperInterface):
             await page.goto(manga_url, wait_until="domcontentloaded")
 
             await page.wait_for_timeout(2000)
-            await page.wait_for_selector("img[alt *= 'Page']", timeout=5000)
+            # await page.wait_for_selector("img[alt *= 'InManga']", timeout=5000)
+            await page.wait_for_selector("#\\37 fec8d3c-a2ea-4a08-b2eb-799334f3638b", timeout=5000)
             html = await page.content()
         except PlaywrightTimeoutError:
             raise
@@ -134,12 +135,12 @@ class InManga(ScraperBase, ScraperInterface):
             await self.__close_page(page)
 
         soup = BeautifulSoup(html, "html.parser")
-        tags = soup.find_all("img")
+        tags = soup.find_all("img.ImageContainer")
 
         chapters_dict = {}
 
         for tag in tags:
-            if tag.has_attr("alt") and "Page" in tag["alt"]:
+            if tag.has_attr("alt") and "InManga" in tag["alt"]:
                 chapters_dict[tag["alt"]] = tag.get("src", "N/A")
 
         return chapters_dict
