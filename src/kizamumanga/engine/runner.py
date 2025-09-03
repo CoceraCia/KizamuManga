@@ -370,8 +370,6 @@ class Runner:
     async def __replace_invalid_chars(self, vtoreplace:str)->str:
         invalid_chars = [
             "<", ">", ":", '"', "/", "\\", "|", "?", "*"]
-        print(vtoreplace)
         for char in invalid_chars:
             vtoreplace = vtoreplace.replace(char, "")
-            print(vtoreplace)
         return vtoreplace

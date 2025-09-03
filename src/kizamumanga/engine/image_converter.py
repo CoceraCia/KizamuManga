@@ -40,8 +40,12 @@ class ImageConverter:
 
     def grayscale(self):
         """Convert the image to grayscale and overwrite the original."""
-        img = np.array(self.b_img)
-
+        try:
+            img = np.array(self.b_img)
+        except OSError as e:
+            self.logger.exception(f"Resize failed for {self.b_img}: {e}")
+            raise RuntimeError from e
+        
         if img is None:
             self.logger.error("Image could not be loaded for grayscale conversion")
             raise ValueError("Image could not be loaded for grayscale conversion")
@@ -67,7 +71,7 @@ class ImageConverter:
             contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
             if not contours:
-                self.logger.warning(f"No contours found in {self.image_path}")
+                self.logger.warning(f"No contours found")
                 return
 
             x_min, y_min, x_max, y_max = image.shape[1], image.shape[0], 0, 0
@@ -86,7 +90,7 @@ class ImageConverter:
             cropped = image[y_min:y_max, x_min:x_max]
             self.b_img = Image.fromarray(cropped)
         except Exception as e:
-            self.logger.error(f"Cropping failed for {self.image_path}: {e}")
+            self.logger.error(f"Cropping failed: {e}")
 
     def retrieve_buffered_img(self):
         self.b_img.save(self.output_buffer, format="PNG")

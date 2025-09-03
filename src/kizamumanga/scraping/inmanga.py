@@ -118,30 +118,52 @@ class InManga(ScraperBase, ScraperInterface):
         """Get image URLs for a chapter as {image_name: src}."""
         page = None
         manga_url = BASE_URL + manga_url
-        print(manga_url)
         try:
             page = await self.context.new_page()
             await page.set_extra_http_headers(HEADERS)
 
             await page.goto(manga_url, wait_until="domcontentloaded")
-
             await page.wait_for_timeout(2000)
-            # await page.wait_for_selector("img[alt *= 'InManga']", timeout=5000)
-            await page.wait_for_selector("#\\37 fec8d3c-a2ea-4a08-b2eb-799334f3638b", timeout=5000)
-            html = await page.content()
+            await page.wait_for_selector("a.NextPage:nth-child(1)")
+            
+            while True:
+                height1 = await page.evaluate("document.scrollingElement.scrollHeight")
+                for i in range(round(height1/200) + 50):
+                    await page.mouse.wheel(0,200)
+                height2 = await page.evaluate("document.scrollingElement.scrollHeight")
+                if height1 == height2:
+                    break
+            i = 0
+            while True:
+                if i != 2:
+                    html = await page.content()
+                    soup = BeautifulSoup(html, "html.parser")
+                    tags = soup.select("img.ImageContainer")
+                    
+                    loaded = True
+                    for tag in tags:
+                        if ".gif" in tag.get("src"):
+                            loaded = False
+                            print("Not charged")
+                            break
+                    if loaded:
+                        break
+                    i += 1
+                    time.sleep(1)
+                else:
+                    print("Couldn't load all imgs")
+                    raise PlaywrightTimeoutError("Page couldn't charge all the images")
         except PlaywrightTimeoutError:
             raise
         finally:
             await self.__close_page(page)
-
-        soup = BeautifulSoup(html, "html.parser")
-        tags = soup.find_all("img.ImageContainer")
+      
 
         chapters_dict = {}
 
-        for tag in tags:
+        for i, tag in enumerate(tags, start=1):
             if tag.has_attr("alt") and "InManga" in tag["alt"]:
-                chapters_dict[tag["alt"]] = tag.get("src", "N/A")
-
+                chapters_dict[f"Pagina {i}"] = tag.get("src", "N/A")
+        
         return chapters_dict
     

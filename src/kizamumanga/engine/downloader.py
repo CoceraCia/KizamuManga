@@ -57,12 +57,13 @@ class MangaDownloader:
                                 with open(img_path, "wb") as f:
                                     f.write(img.getvalue())
                                     self._logger.info(f"Downloaded: {img_path}")
-                                # self.__process_image(img_path)
                                 break
                         except asyncio.TimeoutError:
                             self._logger.error(f"Timeout while downloading {img_name}")
                         except FileNotFoundError:
                             self._logger.error("Download interrupted by user")
+                        except Exception:
+                            self._logger.error("Image download failed probably by antibot")
                     else:
                         self._logger.error(f"Failed after 5 retries: {img_name}")
                         return False

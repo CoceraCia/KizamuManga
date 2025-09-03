@@ -28,7 +28,7 @@ class ScraperBase:
         self.logger.info("Setting up Playwright browser")
         p = await async_playwright().start()
         self.logger.info("Launching headless browser")
-        self.browser = await p.chromium.launch(headless=False)
+        self.browser = await p.chromium.launch(headless=True)
         self.logger.info("Creating new browser context")
         self.context = await self.browser.new_context()
 
