@@ -366,6 +366,7 @@ class Runner:
                 self.ls.update(chap)
         else:
             self.logger.info(f"Chapter {chap} already exists in CBZ format")
+            self.ls.update(chap)
 
     async def __replace_invalid_chars(self, vtoreplace:str)->str:
         invalid_chars = [
