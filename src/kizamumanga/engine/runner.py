@@ -10,7 +10,7 @@ import time
 
 from rich.console import Console
 from handlers import ArgsHandler
-from scraping import WeebCentral, ScraperInterface, MangaError
+from scraping import WeebCentral, InManga, ScraperInterface, MangaError
 from utils import LoadingSpinner, export_to_cbz, Ascii
 from utils.logger import Logger
 from .downloader import MangaDownloader
@@ -55,6 +55,8 @@ class Runner:
         match self.config.website:  # retrieve the selected scrapper
             case "weeb_central":
                 self.ws = WeebCentral()
+            case "inmanga":
+                self.ws = InManga()
         self.logger.info(
             f"Scraper initialized and selected: {self.ws.__class__.__name__}"
         )
@@ -242,12 +244,8 @@ class Runner:
                         f"Invalid chapter range: {self.args.chap} when searching for {len(chapters)} chapters"
                     )
                     raise ValueError("Invalid chapter range")
-
-        manga_name: str = self.manga_name
-        invalid_chars = [
-            "<", ">", ":", '"', "/", "\\", "|", "?", "*"]
-        for char in invalid_chars:
-            manga_name = manga_name.replace(char, "")
+                
+        manga_name = await self.__replace_invalid_chars(self.manga_name)
 
         download_all = True if self.args.chap is None else False
         tasks = []
@@ -259,6 +257,7 @@ class Runner:
             self.ls.start("Downloading all chapters", len(chapters))
             self.logger.info("Downloading all chapters")
             for chap, href in chapters.items():
+                chap = await self.__replace_invalid_chars(chap)
                 pngs_path = os.path.normpath(
                     f"{TEMP_PATH}/{manga_name}/{chap}")
                 tasks.append(
@@ -367,3 +366,11 @@ class Runner:
                 self.ls.update(chap)
         else:
             self.logger.info(f"Chapter {chap} already exists in CBZ format")
+            self.ls.update(chap)
+
+    async def __replace_invalid_chars(self, vtoreplace:str)->str:
+        invalid_chars = [
+            "<", ">", ":", '"', "/", "\\", "|", "?", "*"]
+        for char in invalid_chars:
+            vtoreplace = vtoreplace.replace(char, "")
+        return vtoreplace
