@@ -7,7 +7,7 @@ from playwright.async_api import async_playwright
 from utils.logger import Logger
 
 
-AVAILABLE_WBSITES = ["weeb_central"]
+AVAILABLE_WBSITES = ["weeb_central", "inmanga"]
 
 
 class MangaError(Exception):
@@ -28,7 +28,7 @@ class ScraperBase:
         self.logger.info("Setting up Playwright browser")
         p = await async_playwright().start()
         self.logger.info("Launching headless browser")
-        self.browser = await p.chromium.launch(headless=False)
+        self.browser = await p.chromium.launch(headless=True)
         self.logger.info("Creating new browser context")
         self.context = await self.browser.new_context()
 
