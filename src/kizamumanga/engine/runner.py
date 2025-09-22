@@ -10,7 +10,7 @@ import time
 
 from rich.console import Console
 from handlers import ArgsHandler
-from scraping import WeebCentral, InManga, ZonaTMO, ScraperInterface, MangaError
+from scraping import WeebCentral, InManga, ScraperInterface, MangaError
 from utils import LoadingSpinner, export_to_cbz, Ascii
 from utils.logger import Logger
 from .downloader import MangaDownloader
@@ -57,8 +57,6 @@ class Runner:
                 self.ws = WeebCentral()
             case "inmanga":
                 self.ws = InManga()
-            case "zonaTMO":
-                self.ws = ZonaTMO()
         self.logger.info(
             f"Scraper initialized and selected: {self.ws.__class__.__name__}"
         )
