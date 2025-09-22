@@ -12,8 +12,8 @@ cbz_path = ""
 # ===============================
 
 # Website to scrape manga from.
-# Example: "weeb_central", "inmanga"
-website = "weeb_central"
+# Example: "weeb_central", "inmanga", "leermangaesp"
+website = "leermangaesp"
 
 # Number of simultaneous tasks the engine can run.
 # If empty (""), defaults to 5.
