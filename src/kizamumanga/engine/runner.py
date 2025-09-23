@@ -75,12 +75,6 @@ class Runner:
     async def run(self):
         """Main method to run the manga downloading process."""
         try:
-            # Check if cbz_path exists
-            if not os.path.exists(CBZ_PATH):
-                print("Please set a valid folder for the cbz_path")
-                raise FileNotFoundError(
-                    f"Folder doesn't exists at: {CBZ_PATH}")
-
             # Create tempPath
             os.makedirs(TEMP_PATH, exist_ok=True)
             self.logger.info(f"Temporary PNGs path created: {TEMP_PATH}")
@@ -89,6 +83,12 @@ class Runner:
             if self.args.command == "config":
                 await self.modify_config()
                 return
+
+            # Check if cbz_path exists
+            if not os.path.exists(CBZ_PATH):
+                print("Please set a valid folder for the cbz_path")
+                raise FileNotFoundError(
+                    f"Folder doesn't exists at: {CBZ_PATH}")
 
             # set up scraper components
             await self.ws.set_up()

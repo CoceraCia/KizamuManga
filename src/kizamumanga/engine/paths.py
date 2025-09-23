@@ -2,7 +2,7 @@ import os
 import tomlkit
 
 PROJECT_ROOT = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "..")
+    os.path.join(os.path.dirname(__file__), "..")
 )
 
 CONFIG_PATH = os.path.join(PROJECT_ROOT, "config.toml")
