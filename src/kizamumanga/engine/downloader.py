@@ -7,9 +7,8 @@ import ssl
 
 import aiohttp
 
-from scraping.interface import ScraperInterface
-from scraping.base import MangaError
-from utils.logger import Logger
+from ..scraping import ScraperInterface, MangaError
+from ..utils import Logger
 from .image_converter import ImageConverter
 from .config import Config
 

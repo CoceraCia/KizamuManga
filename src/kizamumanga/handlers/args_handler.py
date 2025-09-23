@@ -8,8 +8,8 @@ import argparse
 import os
 import re
 
-from utils import Logger
-from scraping import ScraperBase
+from ..utils import Logger
+from ..scraping import ScraperBase
 
 AVAILABLE_DEVICES = {"boox_go_7":[1680, 1264]}
 

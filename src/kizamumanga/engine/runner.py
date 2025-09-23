@@ -9,10 +9,9 @@ import tempfile
 import time
 
 from rich.console import Console
-from handlers import ArgsHandler
-from scraping import WeebCentral, InManga, LeerMangaEsp, ScraperInterface, MangaError
-from utils import LoadingSpinner, export_to_cbz, Ascii
-from utils.logger import Logger
+from ..handlers import ArgsHandler
+from ..scraping import WeebCentral, InManga, LeerMangaEsp, ScraperInterface, MangaError
+from ..utils import LoadingSpinner, export_to_cbz, Ascii, Logger
 from .downloader import MangaDownloader
 from .config import Config
 from .paths import CBZ_PATH, TEMP_PATH

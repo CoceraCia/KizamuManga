@@ -4,8 +4,7 @@ from playwright.async_api import Error, TimeoutError as PlaywrightTimeoutError, 
 
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-from utils.logger import Logger
-from utils.general_tools import extract_num
+from ..utils import Logger, extract_num
 from .interface import ScraperInterface
 from .base import ScraperBase, MangaError
 
