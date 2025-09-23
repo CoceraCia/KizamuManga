@@ -34,8 +34,8 @@ pip install -r requirements.txt && playwright install
 4. start searching or installing a manga
 
 ```bash
-python -m kizamumanga search "One Piece"
-python -m kizamumanga install "One Piece"
+python -m kizamumanga.main search "One Piece"
+python -m kizamumanga.main install "One Piece"
 ```
 
 ## 🧾 Requirements
@@ -73,11 +73,11 @@ You can also modify configuration from the terminal:
 
 ## 🕹️ Basic Usage
 
-- Search for manga: `python -m kizamumanga search "One Piece"`
-- Download all chapters: `python -m kizamumanga install "One Piece"`
+- Search for manga: `python -m kizamumanga.main search "One Piece"`
+- Download all chapters: `python -m kizamumanga.main install "One Piece"`
 - Download a specific chapter or range:
-  - `python -m kizamumanga install "One Piece" 5`
-  - `python -m kizamumanga install "One Piece" 10-15`
+  - `python -m kizamumanga.main install "One Piece" 5`
+  - `python -m kizamumanga.main install "One Piece" 10-15`
     CBZ files are saved in the folder defined by `cbz_path`.
 
 ## 🔄 Internal Workflow
