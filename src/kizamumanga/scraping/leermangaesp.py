@@ -126,13 +126,12 @@ class LeerMangaEsp(ScraperBase, ScraperInterface):
             await self.__close_page(page)
 
         soup = BeautifulSoup(html, "html.parser")
-        images = soup.select("#cascade-view")
-
+        imgs = soup.select("#cascade-view img")
         chapters_dict = {}
+        
+        for item in imgs:
+            alt = item.get("alt")
+            src = item.get("src")
+            chapters_dict[alt] = src
 
-        for item in images:
-            print(item.get("alt"))
-
-        # print(chapters_dict)
-
-        # return chapters_dict
+        return chapters_dict

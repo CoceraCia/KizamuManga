@@ -27,7 +27,7 @@ multiple_tasks = 5
 # Whether the exported images will be in color.
 # true = color | false = grayscale
 # If empty (""), defaults to true.
-color = true
+color = false
 
 # Enable or disable automatic image cropping.
 # If empty (""), defaults to true.
