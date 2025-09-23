@@ -1,8 +1,6 @@
-# kizamumanga/main.py
 # -*- coding: utf-8 -*-
 """
-KizamuManga - A manga downloader
-with support for multiple sources.
+KizamuManga - A manga downloader with support for multiple sources.
 """
 import asyncio
 import os
@@ -11,11 +9,15 @@ from .engine import Runner
 
 async def main():
     await Runner().run()
- 
-if __name__ == "__main__":
+
+def cli():
     try:
         asyncio.run(main())
-    except (asyncio.exceptions.CancelledError, KeyboardInterrupt) as e:
+    except (asyncio.CancelledError, KeyboardInterrupt):
         pass
     finally:
+        # evita ruido en stderr al cerrar
         sys.stderr = open(os.devnull, "w", encoding="utf-8")
+
+if __name__ == "__main__":
+    cli()

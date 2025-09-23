@@ -4,7 +4,7 @@ import asyncio
 
 from playwright.async_api import async_playwright
 
-from utils.logger import Logger
+from ..utils import Logger
 
 
 AVAILABLE_WBSITES = ["weeb_central", "inmanga", "leermangaesp"]

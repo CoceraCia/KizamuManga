@@ -43,7 +43,7 @@ dependencies = [
 ]
 
 [project.scripts]
-kizamumanga = "kizamumanga.main:main"
+kizamumanga = "kizamumanga.main:cli"
 
 [project.urls]
 Homepage = "https://github.com/CoceraCia/KizamuManga"
