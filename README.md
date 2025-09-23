@@ -88,5 +88,5 @@ CBZ files are saved in the folder defined by `cbz_path`.
             ├── loading_spinner.py
             └── general_tools.py
 ```
-
-
+## 📜 License
+This project is under the license [MIT](LICENSE).
