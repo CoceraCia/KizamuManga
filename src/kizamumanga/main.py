@@ -7,7 +7,7 @@ with support for multiple sources.
 import asyncio
 import os
 import sys
-from engine import Runner
+from .engine import Runner
 
 async def main():
     await Runner().run()
