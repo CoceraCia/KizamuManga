@@ -1,6 +1,6 @@
 <p align="center"><img width="300" alt="KizamuManga" src="https://github.com/user-attachments/assets/153c6620-7461-4ffe-a399-69aa9f03b885" /></p>
 
-# 📚 KizamuManga  ![Estado](https://img.shields.io/badge/state-stable-brightgreen) ![Licencia](https://img.shields.io/badge/license-MIT-blue.svg)
+# 📚 KizamuManga  ![State](https://img.shields.io/badge/state-development-yellow) ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 **KizamuManga** is a command-line tool to **search, download, and convert manga chapters into CBZ files** from different online sources.
 
