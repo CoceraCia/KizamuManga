@@ -1,0 +1,1 @@
+default folder for the mangas to be downloaded

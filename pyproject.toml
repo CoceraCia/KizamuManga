@@ -1,22 +1,60 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "kizamu_manga"
-version = "0.1.0"
-description = "Un descargador de mangas desde la línea de comandos usando Playwright, BeautifulSoup y aiohttp para hacer scraping de sitios web."
-authors = [
-    { name="Cocera Cia", email="coceraciamiguel@gmail.com" }
-]
-readme = "README.md"
+name = "kizamumanga"
+version = "1.0.0"
+description = "CLI to search and download manga chapters -> exported to CBZ."
+readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [{ name = "Cocera Cia", email = "coceraciamiguel@gmail.com" }]
+keywords = [
+    "manga",
+    "scraping",
+    "downloader",
+    "playwright",
+    "cbz",
+    "cli",
+    "comic",
+    "asynchronous",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Multimedia :: Graphics",
+]
 dependencies = [
-    "aiohttp>=3.12.1",
-    "beautifulsoup4>=4.13.0",
-    "playwright>=1.53.0",
-    "PyYAML>=6.0.0"
+    "aiohttp>=3.12.14",
+    "beautifulsoup4>=4.13.4",
+    "playwright>=1.54.0",
+    "rich>=14.1.0",
+    "tenacity>=9.1.2",
+    "tomlkit>=0.13.3",
+    "pillow>=11.3.0",
+    "opencv-python>=4.12.0.88",
+    "numpy>=2.2.6",
 ]
 
 [project.scripts]
-manga_downloader = "kizamu.cli:main"
+kizamumanga = "kizamumanga.main:main"
+
+[project.urls]
+Homepage = "https://github.com/CoceraCia/KizamuManga"
+Repository = "https://github.com/CoceraCia/KizamuManga"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"kizamumanga" = ["*.txt", "*.toml"]
