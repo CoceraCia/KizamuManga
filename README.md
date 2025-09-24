@@ -1,6 +1,6 @@
 <p align="center"><img width="300" alt="KizamuManga" src="https://github.com/user-attachments/assets/153c6620-7461-4ffe-a399-69aa9f03b885" /></p>
 
-# 📚 KizamuManga  ![State](https://img.shields.io/badge/state-development-yellow) ![License](https://img.shields.io/badge/license-MIT-blue.svg)
+# 📚 KizamuManga  ![State](https://img.shields.io/badge/state-v1.0.1-green) ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 **KizamuManga** is a command-line tool to **search, download, and convert manga chapters into CBZ files** from different online sources.
 
@@ -11,31 +11,24 @@
 - 🖼️ **Optional image processing**: grayscale conversion, margin cropping, and proportional resizing.
 - 🌐 **Multi-source support** (WeebCentral, InManga, and LeerMangaEsp) with an extensible scraping system based on Playwright.
 - 📊 **Progress indicators and rotating logs** for easy tracking of execution.
-  ##⚡Quick Start
 
-1. Clone the repository and enter the project folder
+## ⚡ Quick Start
 
+1. Install the program package via pip
 ```bash
-git clone https://github.com/CoceraCia/KizamuManga.git
+pip install kizamu-manga
 ```
 
-2. Enter the project repo
-
+2. Install the playwright browsers
 ```bash
-cd KizamuManga
+playwright install
 ```
 
-3. install requirements and playwright browsers
+3. start searching or installing a manga
 
 ```bash
-pip install -r requirements.txt && playwright install
-```
-
-4. start searching or installing a manga
-
-```bash
-python -m kizamumanga.main search "One Piece"
-python -m kizamumanga.main install "One Piece"
+kizamumanga search "One Piece"
+kizamumanga install "One Piece"
 ```
 
 ## 🧾 Requirements
@@ -46,11 +39,29 @@ python -m kizamumanga.main install "One Piece"
 - Access to the supported websites to fetch online chapters.
 
 ## ⚙️ Installation
+### Option 1: Install from PyPI (recommended)
+If you just want to use the tool:
+```bash
+pip install kizamu-manga
+playwright install
+```
+### Option 2: Install from source
+```bash
+# Clone the repository
+git clone https://github.com/<your-user>/kizamu-manga.git
+cd kizamu-manga
 
-1. Clone the repository and enter the project folder.
-2. (Optional) Create and activate a virtual environment.
-3. Install dependencies: `pip install -r requirements.txt`
-4. Install Playwright browsers: `playwright install`
+# (Optional) Create and activate a virtual environment
+python -m venv .venv
+source .venv/bin/activate   # Linux/Mac
+.venv\Scripts\activate      # Windows
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Install Playwright browsers
+playwright install
+```
 
 ## 🔧 Configuration
 
@@ -58,27 +69,56 @@ The `config.toml` file (at the project root) allows customization of parameters 
 
 | Key                    | Description                                                      |
 | ---------------------- | ---------------------------------------------------------------- |
-| `cbz_path`           | Destination folder for CBZ files (default:`manga_downloads`).  |
-| `website`            | Active source (`weeb_central`, `inmanga`, `leermangaesp`). |
+| `cbz_path`           | Destination folder for CBZ files (default: `Documents/manga_downloads`).  |
+| `website`            | Active source (`weeb_central` -> stable, `inmanga`-> unstable, `leermangaesp`) -> stable |
 | `multiple_tasks`     | Maximum number of concurrent downloads.                          |
 | `color`              | Export in color (`true`) or grayscale (`false`).             |
 | `cropping_mode`      | Enable automatic margin cropping.                                |
 | `width` / `height` | Target resolution; leave empty to keep original size.            |
 
-You can also modify configuration from the terminal:
+You can also modify configuration directly from the terminal. Here are some common use cases:
 
-- Change scraper and concurrency: `python -m kizamumanga.main config scraper --website inmanga --multiple_tasks 5`
-- Change output folder: `python -m kizamumanga.main config paths --cbz_path "./my_manga"`
-- Apply predefined resolution profile: `python -m kizamumanga.main config dimensions --device boox_go_7`
+### Change scraper source and concurrency:
+```bash
+  kizamumanga config scraper --website "inmanga" --multiple_tasks 5
+```
+- This switches the active scraper to inmanga and sets the maximum number of parallel download tasks to 5.
+### Change output folder for CBZ files: 
+```bash
+  kizamumanga config paths --cbz_path "./my_manga"
+```
+- This updates the destination directory where downloaded CBZ files are stored.
+### Apply a predefined resolution profile:
+Currently supported device presets: boox_go_7 (more coming soon).
+```bash
+  kizamumanga config dimensions --device "boox_go_7"
+```
+- This automatically assigns width/height settings based on the Boox Go 7 device preset.
+### Manually set output resolution: 
+```bash
+  kizamumanga config dimensions --width 1080 --height 1440
+```
+- This forces a custom resolution (1080×1440 px), overriding any preset device profile.
+### Export in grayscale with margin cropping enabled: 
+```bash
+  kizamumanga config output --color false --cropping_mode true
+```
+- This configures exported images to be grayscale and have automatic margin cropping applied.
+
 
 ## 🕹️ Basic Usage
 
-- Search for manga: `python -m kizamumanga.main search "One Piece"`
-- Download all chapters: `python -m kizamumanga.main install "One Piece"`
+- Search for manga: `kizamumanga search "One Piece"`
+- Download all chapters: `kizamumanga install "One Piece"`
 - Download a specific chapter or range:
-  - `python -m kizamumanga.main install "One Piece" 5`
-  - `python -m kizamumanga.main install "One Piece" 10-15`
-    CBZ files are saved in the folder defined by `cbz_path`.
+  - `kizamumanga install "One Piece" 5`
+  - `kizamumanga install "One Piece" 10-15`
+
+By default CBZ files are saved in:
+- Linux/Mac: `$HOME/Documents/manga_downloads`
+- Windows: `%USERPROFILE%\Documents\manga_downloads`
+
+You can change the location by using `kizamumanga config paths --cbz_path "./my_manga"`.
 
 ## 🔄 Internal Workflow
 
