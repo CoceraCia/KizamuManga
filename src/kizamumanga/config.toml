@@ -3,7 +3,7 @@
 # ===============================
 
 # Path to the directory where CBZ files will be saved.
-# If empty (""), defaults to: <project_root>/manga_downloads
+# If empty (""), defaults to: <user_home>/Documents/manga_downloads 
 cbz_path = ""
 
 
@@ -13,7 +13,7 @@ cbz_path = ""
 
 # Website to scrape manga from.
 # Example: "weeb_central", "inmanga", "leermangaesp"
-website = "leermangaesp"
+website = "weeb_central"
 
 # Number of simultaneous tasks the engine can run.
 # If empty (""), defaults to 5.

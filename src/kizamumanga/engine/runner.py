@@ -75,15 +75,17 @@ class Runner:
     async def run(self):
         """Main method to run the manga downloading process."""
         try:
-            # Create tempPath
-            os.makedirs(TEMP_PATH, exist_ok=True)
-            self.logger.info(f"Temporary PNGs path created: {TEMP_PATH}")
-
             # -----------------execute console commands----------------
             if self.args.command == "config":
                 await self.modify_config()
                 return
-
+            
+            print(f"Mangas path: {self.config.cbz_path}")
+            
+            # Create tempPath
+            os.makedirs(TEMP_PATH, exist_ok=True)
+            self.logger.info(f"Temporary PNGs path created: {TEMP_PATH}")
+                    
             # Check if cbz_path exists
             if not os.path.exists(CBZ_PATH):
                 print("Please set a valid folder for the cbz_path")
@@ -138,13 +140,20 @@ class Runner:
                     self.logger.info(
                         f"dimensions changed to {self.args.width}x{self.args.height}"
                     )
+                    print(
+                        f"dimensions changed to {self.args.width}x{self.args.height}"
+                    )
             elif self.args.conf_comm == "scraper":
                 if self.args.website:
                     self.config.website = self.args.website
                     self.logger.info(f"Website changed to {self.args.website}")
+                    print(f"Website changed to {self.args.website}")
                 if self.args.multiple_tasks:
                     self.config.multiple_tasks = self.args.multiple_tasks
                     self.logger.info(
+                        f"Multiple tasks changed to {self.args.multiple_tasks}"
+                    )
+                    print(
                         f"Multiple tasks changed to {self.args.multiple_tasks}"
                     )
             elif self.args.conf_comm == "output":
@@ -153,13 +162,19 @@ class Runner:
                     self.logger.info(
                         f"Cropping_mode changed to {self.args.cropping_mode}"
                     )
+                    print(
+                        f"Cropping_mode changed to {self.args.cropping_mode}"
+                    )
                 if self.args.color is not None:  # it's bool
                     self.config.color = self.args.color
                     self.logger.info(f"Color changed to {self.args.website}")
+                    print(f"Color changed to {self.args.website}")
             elif self.args.conf_comm == "paths":
                 if self.args.cbz_path:
                     self.config.cbz_path = self.args.cbz_path
                     self.logger.info(
+                        f"CBZ path changed to {self.args.cbz_path}")
+                    print(
                         f"CBZ path changed to {self.args.cbz_path}")
 
     async def search(self) -> dict:
@@ -307,7 +322,7 @@ class Runner:
 
         time.sleep(1)
         Ascii().thank_you_for_downloading()
-        print(f"Chapter {self.args.chap} downloaded at {manga_path}")
+        print(f"Chapters downloaded at {manga_path}")
 
     async def close(self):
         """Method to close the runner and clean up resources."""
