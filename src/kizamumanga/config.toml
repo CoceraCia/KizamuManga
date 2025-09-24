@@ -3,7 +3,7 @@
 # ===============================
 
 # Path to the directory where CBZ files will be saved.
-# If empty (""), defaults to: <user_home>/Documents/manga_downloads
+# If empty (""), defaults to: <user_home>/Documents/manga_downloads 
 cbz_path = ""
 
 
