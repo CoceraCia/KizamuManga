@@ -3,7 +3,7 @@ requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "kizamumanga"
+name = "kizamu-manga"
 version = "1.0.0"
 description = "CLI to search and download manga chapters -> exported to CBZ."
 readme = { file = "README.md", content-type = "text/markdown" }
