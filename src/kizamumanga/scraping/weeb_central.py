@@ -51,7 +51,7 @@ class WeebCentral(ScraperBase, ScraperInterface):
         try:
             page = await self.context.new_page()
             await page.set_extra_http_headers(HEADERS)
-            await page.goto(url, wait_until="domcontentloaded")
+            await page.goto(url, wait_until="domcontentloaded", timeout=10000)
             await page.wait_for_selector(
                 "#search-results > article:nth-child(1)", timeout=1500
             )
