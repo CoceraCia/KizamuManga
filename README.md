@@ -45,7 +45,7 @@ If you just want to use the tool:
 pip install kizamu-manga
 playwright install
 ```
-### Option 2: Install from source
+### Option 2: Install from source (for developers)
 ```bash
 # Clone the repository
 git clone https://github.com/<your-user>/kizamu-manga.git
@@ -56,11 +56,16 @@ python -m venv .venv
 source .venv/bin/activate   # Linux/Mac
 .venv\Scripts\activate      # Windows
 
-# Install dependencies
-pip install -r requirements.txt
+# Install dependencies and the package in editable mode
+pip install -e .
 
 # Install Playwright browsers
 playwright install
+```
+
+Now you can run the tool directly using the `kizamumanga` command or:
+```bash
+python -m kizamumanga.main
 ```
 
 ## 🔧 Configuration
