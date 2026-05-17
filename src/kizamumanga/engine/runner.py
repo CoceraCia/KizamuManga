@@ -270,7 +270,7 @@ class Runner:
         os.makedirs(manga_path, exist_ok=True)
 
         if download_all is True:
-            self.ls.start("Downloading all chapters", len(chapters))
+            self.ls.start("Downloading all chapters", start = 1, end= len(chapters))
             self.logger.info("Downloading all chapters")
             for chap, href in chapters.items():
                 chap = await self.__replace_invalid_chars(chap)
@@ -286,7 +286,11 @@ class Runner:
                     )
                 )
         else:
-            self.ls.start("Downloading chapters", len(chapters))
+            if isinstance(self.args.chap, int):
+                self.ls.start(f"Downloading chapter {self.args.chap}", start = self.args.chap, end = self.args.chap)
+            else:
+                self.ls.start(f"Downloading chapters {self.args.chap[0]}-{self.args.chap[1]}", start = self.args.chap[0], end = self.args.chap[1])
+
             self.logger.info(
                 f"Downloading chapters in range: {self.args.chap}")
             for i, (chap, href) in enumerate(chapters.items(), start=1):
