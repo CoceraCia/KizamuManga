@@ -16,13 +16,13 @@ class LoadingSpinner:
         self.state : bool = None
         self.thread : threading.Thread = None
 
-    def start(self, message: str, total = None):
+    def start(self, message: str, start = None, end = None):
         """Start spinner with a message."""
         self.state = True
-        if not total:
+        if not start and not end:
             self.thread = threading.Thread(target=self.__loading_message, args=(message,))
         else:
-            self.thread = threading.Thread(target=self.__downloading_message, args=(message,total))
+            self.thread = threading.Thread(target=self.__downloading_message, args=(message,start,end))
         self.thread.start()
 
     def end(self):
@@ -45,8 +45,8 @@ class LoadingSpinner:
         with console.status(f"[bold #9f25cc]{message}...", spinner="dots", spinner_style="#9f25cc"):
             while self.state:
                 time.sleep(0.1)
-    def __downloading_message(self, message:str, total : int):
-        self.total = total
+    def __downloading_message(self, message:str, start : int, end : int):
+        self.total = (end - start + 1) if (end != 0) else 0
         self.progress =  Progress(
             TextColumn("[bold blue]{task.description}"),
             BarColumn(bar_width=40),
@@ -56,5 +56,5 @@ class LoadingSpinner:
         console = Console()
         console.print(f"[bold]{message}[/bold]", end="")
         print("...")
-        self.task = self.progress.add_task(f"0/{self.total}",total = total)
+        self.task = self.progress.add_task(f"0/{self.total}",total = self.total)
         self.progress.start()
