@@ -1,135 +1,327 @@
-<p align="center"><img width="300" alt="KizamuManga" src="https://github.com/user-attachments/assets/153c6620-7461-4ffe-a399-69aa9f03b885" /></p>
+<p align="center">
+  <img width="300" alt="KizamuManga" src="https://github.com/user-attachments/assets/153c6620-7461-4ffe-a399-69aa9f03b885" />
+</p>
 
-# 📚 KizamuManga  ![State](https://img.shields.io/badge/state-v1.2.0-green) ![License](https://img.shields.io/badge/license-MIT-blue.svg)
+# 📚 KizamuManga
 
-**KizamuManga** is a command-line tool to **search, download, and convert manga chapters into CBZ files** from different online sources.
+![State](https://img.shields.io/badge/state-v1.2.0-green)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python](https://img.shields.io/badge/python-3.9%2B-blue)
+
+**KizamuManga** is an educational Python CLI project created to explore web automation, scraping, asynchronous workflows, concurrency control, image processing, terminal-based configuration, and CBZ file generation.
+
+The project was built as a personal learning experience to design, structure, document, package, and publish a complete Python command-line tool.
+
+> This repository does not include manga pages, panels, images, or copyrighted content.
+
+---
+
+## ⚠️ Responsible Use
+
+KizamuManga was created for educational purposes and to practice Python software development through a real-world automation project.
+
+This project is intended to demonstrate technical concepts such as:
+
+- CLI design
+- Web automation
+- Scraping architecture
+- Asynchronous I/O
+- Concurrency control
+- Image processing
+- CBZ packaging
+- Python packaging and PyPI distribution
+
+Users are responsible for ensuring that any use of this tool complies with applicable laws, website terms of service, copyright restrictions, and content access permissions.
+
+Do not use this project to download, distribute, or access copyrighted material without permission.
+
+---
 
 ## ✨ Main Features
 
-- 🔎 **Interactive search** for manga and chapter selection directly from the terminal.
-- ⚡ **Asynchronous downloads** with concurrency control, automatic CBZ export, and cleanup of temporary files.
-- 🖼️ **Optional image processing**: grayscale conversion, margin cropping, and proportional resizing.
-- 🌐 **Multi-source support** (WeebCentral, InManga, and LeerMangaEsp) with an extensible scraping system based on Playwright.
-- 📊 **Progress indicators and rotating logs** for easy tracking of execution.
+- 🔎 **Terminal-based search workflow** with interactive selection.
+- ⚡ **Asynchronous processing pipeline** using concurrent network tasks.
+- 🧵 **Concurrency control** for managing multiple tasks safely.
+- 🖼️ **Optional image processing**, including grayscale conversion, margin cropping, and proportional resizing.
+- 📦 **CBZ generation** for packaging processed image sequences.
+- ⚙️ **Configurable behavior** through a local configuration file and terminal commands.
+- 🧩 **Extensible source-adapter architecture** designed to separate scraping logic from the core application.
+- 📊 **Progress indicators and rotating logs** for easier execution tracking.
+- 🐍 **Packaged Python CLI** published as an installable PyPI package.
+
+---
+
+## 🧠 What I Learned
+
+This project helped me practice several areas of Python development beyond writing simple scripts:
+
+- Designing a real command-line interface.
+- Structuring a Python project with separated responsibilities.
+- Handling asynchronous downloads and I/O-bound workflows.
+- Managing configuration through both files and CLI commands.
+- Working with Playwright, BeautifulSoup, aiohttp, Pillow, and OpenCV.
+- Building an image-processing pipeline.
+- Creating CBZ archives programmatically.
+- Packaging and publishing a Python project.
+- Writing clearer documentation for an open-source-style repository.
+
+---
 
 ## ⚡ Quick Start
 
-1. Install the program package via pip
+### 1. Install the package
+
 ```bash
 pip install kizamu-manga
 ```
 
-2. Install the playwright browsers
+### 2. Install Playwright browsers
+
 ```bash
 playwright install
 ```
 
-3. start searching or installing a manga
+### 3. Check the available commands
 
 ```bash
-kizamumanga search "One Piece"
-kizamumanga install "One Piece"
+kizamumanga --help
 ```
+
+You can also inspect specific command groups:
+
+```bash
+kizamumanga config --help
+```
+
+---
 
 ## 🧾 Requirements
 
-- Python **3.9 or higher**.
-- Dependencies listed in `requirements.txt`.
-- Playwright installed along with its browsers (`playwright install`).
-- Access to the supported websites to fetch online chapters.
+- Python **3.9 or higher**
+- Playwright and its browser dependencies
+- Dependencies listed in `requirements.txt`
+- Network access for web automation workflows
+- Permission to access and process the content used with the tool
+
+---
 
 ## ⚙️ Installation
-### Option 1: Install from PyPI (recommended)
-If you just want to use the tool:
+
+### Option 1: Install from PyPI
+
+Recommended if you want to install the packaged CLI:
+
 ```bash
 pip install kizamu-manga
 playwright install
 ```
-### Option 2: Install from source (for developers)
+
+After installation, the command should be available from your terminal:
+
+```bash
+kizamumanga --help
+```
+
+---
+
+### Option 2: Install from source
+
+Recommended if you want to inspect, modify, or contribute to the project:
+
 ```bash
 # Clone the repository
-git clone https://github.com/<your-user>/kizamu-manga.git
-cd kizamu-manga
+git clone https://github.com/CoceraCia/KizamuManga.git
+cd KizamuManga
 
-# (Optional) Create and activate a virtual environment
+# Optional: create and activate a virtual environment
 python -m venv .venv
-source .venv/bin/activate   # Linux/Mac
-.venv\Scripts\activate      # Windows
+source .venv/bin/activate      # Linux/Mac
+.venv\Scripts\activate         # Windows
 
-# Install dependencies and the package in editable mode
+# Install the package in editable mode
 pip install -e .
 
 # Install Playwright browsers
 playwright install
 ```
 
-Now you can run the tool directly using the `kizamumanga` command or:
+You can then run the tool with:
+
+```bash
+kizamumanga --help
+```
+
+Or directly as a Python module:
+
 ```bash
 python -m kizamumanga.main
 ```
 
+---
+
 ## 🔧 Configuration
 
-The `config.toml` file (at the project root) allows customization of parameters such as:
+The project uses a `config.toml` file to customize behavior such as output paths, active source adapter, concurrency, image settings, and target dimensions.
 
-| Key                    | Description                                                      |
-| ---------------------- | ---------------------------------------------------------------- |
-| `cbz_path`           | Destination folder for CBZ files (default: `Documents/manga_downloads`).  |
-| `website`            | Active source (`weeb_central` -> stable, `inmanga`-> unstable, `leermangaesp`) -> unstable |
-| `multiple_tasks`     | Maximum number of concurrent downloads.                          |
-| `color`              | Export in color (`true`) or grayscale (`false`).             |
-| `cropping_mode`      | Enable automatic margin cropping.                                |
-| `width` / `height` | Target resolution; leave empty to keep original size.            |
+| Key              | Description |
+| ---------------- | ----------- |
+| `cbz_path`       | Destination folder for generated CBZ files. |
+| `website`        | Active source adapter used by the scraping layer. |
+| `multiple_tasks` | Maximum number of concurrent tasks. |
+| `color`          | Export images in color (`true`) or grayscale (`false`). |
+| `cropping_mode`  | Enable or disable automatic margin cropping. |
+| `width`          | Target output width. Leave empty to preserve original size. |
+| `height`         | Target output height. Leave empty to preserve original size. |
 
-You can also modify configuration directly from the terminal. Here are some common use cases:
+You can also update configuration directly from the terminal.
 
-### Change scraper source and concurrency:
-```bash
-  kizamumanga config scraper --website "inmanga" --multiple_tasks 5
-```
-- This switches the active scraper to inmanga and sets the maximum number of parallel download tasks to 5.
-### Change output folder for CBZ files: 
-```bash
-  kizamumanga config paths --cbz_path "./my_manga"
-```
-- This updates the destination directory where downloaded CBZ files are stored.
-### Apply a predefined resolution profile:
-Currently supported device presets: boox_go_7 (more coming soon).
-```bash
-  kizamumanga config dimensions --device "boox_go_7"
-```
-- This automatically assigns width/height settings based on the Boox Go 7 device preset.
-### Manually set output resolution: 
-```bash
-  kizamumanga config dimensions --width 1080 --height 1440
-```
-- This forces a custom resolution (1080×1440 px), overriding any preset device profile.
-### Export in grayscale with margin cropping enabled: 
-```bash
-  kizamumanga config output --color false --cropping_mode true
-```
-- This configures exported images to be grayscale and have automatic margin cropping applied.
+---
 
+### Change source adapter and concurrency
+
+```bash
+kizamumanga config scraper --website "example_source" --multiple_tasks 5
+```
+
+This updates the active source adapter and sets the maximum number of parallel tasks to `5`.
+
+---
+
+### Change output folder
+
+```bash
+kizamumanga config paths --cbz_path "./output"
+```
+
+This updates the destination directory where generated CBZ files are stored.
+
+---
+
+### Apply a predefined device profile
+
+Currently supported device presets:
+
+```bash
+boox_go_7
+```
+
+Example:
+
+```bash
+kizamumanga config dimensions --device "boox_go_7"
+```
+
+This automatically applies width and height settings based on the selected device profile.
+
+---
+
+### Manually set output resolution
+
+```bash
+kizamumanga config dimensions --width 1080 --height 1440
+```
+
+This forces a custom output resolution and overrides any active device preset.
+
+---
+
+### Configure grayscale output and margin cropping
+
+```bash
+kizamumanga config output --color false --cropping_mode true
+```
+
+This configures the output pipeline to export images in grayscale and apply automatic margin cropping.
+
+---
 
 ## 🕹️ Basic Usage
 
-- Search for manga: `kizamumanga search "One Piece"`
-- Download all chapters: `kizamumanga install "One Piece"`
-- Download a specific chapter or range:
-  - `kizamumanga install "One Piece" 5`
-  - `kizamumanga install "One Piece" 10-15`
+The CLI exposes commands for searching, selecting, processing, and packaging content through the terminal.
 
-By default CBZ files are saved in:
-- Linux/Mac: `$HOME/Documents/manga_downloads`
-- Windows: `%USERPROFILE%\Documents\manga_downloads`
+For safety and documentation clarity, the examples below use placeholder names.
 
-You can change the location by using `kizamumanga config paths --cbz_path "./my_manga"`.
+### Search workflow
+
+```bash
+kizamumanga search "sample-title"
+```
+
+### Run the processing workflow
+
+```bash
+kizamumanga install "sample-title"
+```
+
+### Process a specific item
+
+```bash
+kizamumanga install "sample-title" 5
+```
+
+### Process a range
+
+```bash
+kizamumanga install "sample-title" 10-15
+```
+
+By default, generated CBZ files are saved in:
+
+```bash
+~/Documents/manga_downloads
+```
+
+On Windows:
+
+```bash
+%USERPROFILE%\Documents\manga_downloads
+```
+
+You can change the destination folder with:
+
+```bash
+kizamumanga config paths --cbz_path "./output"
+```
+
+---
 
 ## 🔄 Internal Workflow
 
-1. The **Runner** validates arguments, loads configuration, and sets up the selected scraper.
-2. Manga and chapter lists are fetched using **Playwright + BeautifulSoup**.
-3. Each chapter is downloaded via `aiohttp`, optionally processed, and packed into a **CBZ**.
+The project follows a modular workflow:
+
+1. The **CLI layer** parses arguments and routes commands.
+2. The **Runner** validates input, loads configuration, and initializes the selected source adapter.
+3. The **scraping layer** fetches metadata using Playwright and BeautifulSoup.
+4. The **downloader** handles asynchronous network tasks using aiohttp.
+5. The **image processing pipeline** optionally applies grayscale conversion, cropping, and resizing.
+6. The **packaging step** creates CBZ files from the processed images.
+7. Temporary files are cleaned up after successful execution.
+
+---
+
+## 🧱 Architecture Overview
+
+The project is organized around separation of responsibilities:
+
+```text
+CLI command
+   ↓
+Argument handler
+   ↓
+Runner
+   ↓
+Source adapter
+   ↓
+Async downloader
+   ↓
+Image converter
+   ↓
+CBZ output
+```
+
+This design makes it easier to maintain the core workflow while keeping source-specific scraping logic isolated in adapter modules.
+
+---
 
 ## 🗂️ Project Structure
 
@@ -158,6 +350,69 @@ You can change the location by using `kizamumanga config paths --cbz_path "./my_
             └── general_tools.py
 ```
 
+---
+
+## 📦 PyPI
+
+The package is available on PyPI and can be installed with:
+
+```bash
+pip install kizamu-manga
+```
+
+Project package name:
+
+```bash
+kizamu-manga
+```
+
+CLI command:
+
+```bash
+kizamumanga
+```
+
+---
+
+## 🛣️ Roadmap
+
+Some possible future improvements:
+
+- Add automated tests.
+- Improve CLI autocompletion.
+- Improve error messages and validation.
+- Add more robust retry and timeout handling.
+- Add safer demo data using synthetic sample images.
+- Improve documentation for the internal architecture.
+- Add continuous integration with GitHub Actions.
+- Refactor source adapters for easier extensibility.
+- Add more device presets for output dimensions.
+
+---
+
+## 🤝 Contributing
+
+This project was mainly created as a personal learning project, but suggestions, improvements, and technical feedback are welcome.
+
+If you want to contribute:
+
+1. Fork the repository.
+2. Create a new branch.
+3. Make your changes.
+4. Open a pull request explaining what you improved.
+
+Please keep contributions aligned with the educational and responsible-use purpose of the project.
+
+---
+
 ## 📜 License
 
-This project is under the license [MIT](LICENSE).
+This project is licensed under the [MIT License](LICENSE).
+
+The license applies only to the source code in this repository. It does not grant rights over third-party content, websites, images, manga, trademarks, or copyrighted material accessed outside this repository.
+
+---
+
+## 🙋 Author
+
+Created by **Miguel Cocera Cia** as a personal Python learning project focused on CLI development, automation, scraping architecture, asynchronous workflows, image processing, packaging, and documentation.
