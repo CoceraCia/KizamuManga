@@ -1,6 +1,6 @@
 <p align="center"><img width="300" alt="KizamuManga" src="https://github.com/user-attachments/assets/153c6620-7461-4ffe-a399-69aa9f03b885" /></p>
 
-# 📚 KizamuManga  ![State](https://img.shields.io/badge/state-v1.0.1-green) ![License](https://img.shields.io/badge/license-MIT-blue.svg)
+# 📚 KizamuManga  ![State](https://img.shields.io/badge/state-v1.2.0-green) ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 **KizamuManga** is a command-line tool to **search, download, and convert manga chapters into CBZ files** from different online sources.
 
@@ -75,7 +75,7 @@ The `config.toml` file (at the project root) allows customization of parameters 
 | Key                    | Description                                                      |
 | ---------------------- | ---------------------------------------------------------------- |
 | `cbz_path`           | Destination folder for CBZ files (default: `Documents/manga_downloads`).  |
-| `website`            | Active source (`weeb_central` -> stable, `inmanga`-> unstable, `leermangaesp`) -> stable |
+| `website`            | Active source (`weeb_central` -> stable, `inmanga`-> unstable, `leermangaesp`) -> unstable |
 | `multiple_tasks`     | Maximum number of concurrent downloads.                          |
 | `color`              | Export in color (`true`) or grayscale (`false`).             |
 | `cropping_mode`      | Enable automatic margin cropping.                                |
